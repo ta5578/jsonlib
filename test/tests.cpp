@@ -26,3 +26,30 @@ TEST_CASE("TestMissingClosingObjectBracketThrows")
 {
     REQUIRE_THROWS_AS(json::parse("{"), json::parse_exception);
 }
+
+TEST_CASE("TestLexingString")
+{
+    json::detail::Lexer lexer("\"foo\"");
+    auto tok = lexer.getToken();
+    REQUIRE(tok.second == "foo");
+}
+
+TEST_CASE("TestLexingStringMissingTerminatorThrows")
+{
+    json::detail::Lexer lexer("\"foo");
+    REQUIRE_THROWS_AS(lexer.getToken(), json::parse_exception);
+}
+
+TEST_CASE("TestStringValue")
+{
+    auto value = std::make_unique<json::String>("foo");
+    REQUIRE(value->getValue() == "foo");
+}
+
+TEST_CASE("TestParsingStringPairObject")
+{
+    std::string text = "{ \"foo\" : \"bar\" }";
+    auto obj = json::parse(text);
+    auto value = obj->getValue("foo");
+    REQUIRE(value != nullptr);
+}
