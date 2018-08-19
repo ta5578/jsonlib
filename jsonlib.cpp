@@ -76,6 +76,8 @@ namespace json {
                     return lexString();
                 } else if (c == ':') {
                     return {TokenType::COLON, ":"};
+                } else if (c == ',') {
+                    return {TokenType::COMMA, ","};
                 } else {
                     throw parse_exception(c + " is not a valid token!");
                 }
@@ -96,7 +98,7 @@ namespace json {
 
     /*
     Object definition:
-    '{' -> "name" -> ':' -> value -> '}'
+    '{' -> "name" -> ':' -> value -> [,] -> '}'
     */
     static std::unique_ptr<json::Object> parseObject(detail::Lexer &lexer)
     {
@@ -112,29 +114,43 @@ namespace json {
             return std::make_unique<Object>();
         }
 
-        // if object is not empty, we expect name first
-        if (nextTok.first != detail::TokenType::STRING) {
-            throw parse_exception("String token expected but got " + nextTok.second + " instead!");
-        }
-        auto name = nextTok.second;
+        auto obj = std::make_unique<Object>();
+        bool isList = false;
+        do {
+            // name
+            if (nextTok.first != detail::TokenType::STRING) {
+                throw parse_exception("String token expected but got " + nextTok.second + " instead!");
+            }
+            auto name = nextTok.second;
 
-        // colon
-        nextTok = lexer.getToken();
-        if (nextTok.first != detail::TokenType::COLON) {
-            throw parse_exception("Expecting ':' token but got " + nextTok.second + " instead!");
-        }
+            // colon
+            nextTok = lexer.getToken();
+            if (nextTok.first != detail::TokenType::COLON) {
+                throw parse_exception("Expecting ':' token but got " + nextTok.second + " instead!");
+            }
 
-        // value
-        auto value = parseValue(lexer);
+            // value
+            auto value = parseValue(lexer);
+
+            obj->addValue(name, std::move(value));
+            
+            // if there is a comma, we continue parsing the list
+            // otherwise, we are at the end of the name/value pairs
+            nextTok = lexer.getToken();
+            if (nextTok.first == detail::TokenType::COMMA) {
+                isList = true;
+                nextTok = lexer.getToken(); // eat the comma
+            } else {
+                isList = false;
+            }
+
+        } while (isList);
 
         // closing brace
-        nextTok = lexer.getToken();
         if (nextTok.first != detail::TokenType::RBRACE) {
             throw parse_exception("Expecting '}' token but got " + nextTok.second + " instead!");
         }
 
-        auto obj = std::make_unique<Object>();
-        obj->addValue(name, std::move(value));
         return obj;
     }
 

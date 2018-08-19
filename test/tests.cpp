@@ -53,3 +53,17 @@ TEST_CASE("TestParsingStringPairObject")
     auto value = obj->getValue("foo");
     REQUIRE(value != nullptr);
 }
+
+TEST_CASE("TestParsingObjectList")
+{
+    std::string text = 
+    "{\
+        \"foo\" : \"bar\" ,\
+        \"abc\" : \"def\"\
+    }";
+    auto obj = json::parse(text);
+    auto value = obj->getValue("foo");
+    REQUIRE(value != nullptr);
+    auto value2 = obj->getValue("abc");
+    REQUIRE(value2 != nullptr);
+}

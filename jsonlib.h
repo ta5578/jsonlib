@@ -33,6 +33,7 @@ namespace json {
             RBRACE,
             COLON,
             STRING,
+            COMMA,
             NONE
         };
 
