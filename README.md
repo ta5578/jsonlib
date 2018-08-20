@@ -1,6 +1,6 @@
 # jsonlib
 
-jsonlib is a fast and easy to use JSON manipulation library written for C++11. It was written with API design and code readability 
+jsonlib is a fast and easy to use JSON manipulation library written for C++14. It was written with API design and code readability 
 in mind to allow manipulating JSON to be as easy as possible for developers and a pleasurable experience reading the source code.
 
 ## Usage
