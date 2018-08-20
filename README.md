@@ -24,7 +24,7 @@ auto value = obj->getValue("foo");
 ```
 
 ## Building
-jsonlib uses CMake as its build system. For now, the library will be built as a _static_ library; future versions of this library may allow it to be built as a dynamic library.
+jsonlib uses CMake as its build system to build the library and run the unit tests. For now, the library will be built as a _static_ library; future versions of this library may allow it to be built as a dynamic library.
 
 For convenience, a `build` directory was included in the `.gitignore` file to allow you to build the library in three steps:
 
@@ -34,7 +34,11 @@ cd build
 cmake ..
 ```
 
-Building the library in this fashion will also execute the unit tests.
+By default, CMake will generate *debug* versions of the library. To enable release builds, build with CMAKE_BUILD_TYPE set to "release". Note that this will affect single generators like _Make_ and _Ninja_. Other generators like the _Visual Studio_ generator allow you to customize the configuration type once the generator itself is built.
+
+```
+cmake .. -DCMAKE_BUILD_TYPE=release
+```
 
 ## Libraries
 * [CMake](https://cmake.org)
