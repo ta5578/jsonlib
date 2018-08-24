@@ -46,6 +46,19 @@ namespace json {
         return parser.parse();
     }
 
+    Bool::Bool(bool value)
+        : _value(value) {}
+
+    bool Bool::getValue() const
+    {
+        return _value;
+    }
+
+    void* Null::getValue() const
+    {
+        return nullptr;
+    }
+
     namespace detail {
 
         template <class... Args>
@@ -66,6 +79,31 @@ namespace json {
         bool Lexer::isDoneReading() const
         {
             return _cursor >= _text.size();
+        }
+
+        std::string Lexer::lexValueSequence(char initialChar, const std::string& expected)
+        {
+            std::string value(1, initialChar);
+            for (size_t i = 1; i < expected.length() && !isDoneReading(); ++i) {
+                char c = _text[_cursor++];
+                if (c != expected[i]) {
+                    throw parse_exception(json::detail::format("Expecting value sequence '%s' but found '%c' instead!", expected.c_str(), c));
+                }
+                value += c;
+            }
+            return value;
+        }
+
+        Token Lexer::lexBool(char initialChar, const std::string& expected)
+        {
+            auto value = lexValueSequence(initialChar, expected);
+            return { TokenType::JBOOL, value, _line, _pos };
+        }
+
+        Token Lexer::lexNull()
+        {
+            auto value = lexValueSequence('n', "null");
+            return { TokenType::JNULL, value, _line, _pos };
         }
 
         Token Lexer::lexString()
@@ -118,6 +156,12 @@ namespace json {
                     return { TokenType::LBRACKET, "[", _line, _pos };
                 } else if (c == ']') {
                     return { TokenType::RBRACKET, "]", _line, _pos };
+                } else if (c == 't') {
+                    return lexBool(c, "true");
+                } else if (c == 'f') {
+                    return lexBool(c, "false");
+                } else if (c == 'n') {
+                    return lexNull();
                 } else {
                     throw parse_exception(c + " is not a valid token!");
                 }
@@ -189,6 +233,10 @@ namespace json {
                 return std::make_unique<json::String>(currentToken.value);
             } else if (currentToken.type == detail::TokenType::LBRACKET) {
                 return parseArray();
+            } else if (currentToken.type == detail::TokenType::JBOOL) {
+                return std::make_unique<json::Bool>(currentToken.value == "true");
+            } else if (currentToken.type == detail::TokenType::JNULL) {
+                return std::make_unique<json::Null>();
             } else {
                 raiseError("<value>");
             }

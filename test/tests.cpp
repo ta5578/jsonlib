@@ -94,3 +94,55 @@ TEST_CASE("TestParsingMultiElementArrayObject")
     auto value = obj->getValue("foo");
     REQUIRE(value != nullptr);
 }
+
+TEST_CASE("TestLexBoolTrue")
+{
+    json::detail::Lexer lexer("true");
+    auto token = lexer.getToken();
+    REQUIRE(token.line == 1);
+    REQUIRE(token.pos == 1);
+    REQUIRE(token.value == "true");
+    REQUIRE(token.type == json::detail::TokenType::JBOOL);
+}
+
+TEST_CASE("TestLexBoolFalse")
+{
+    json::detail::Lexer lexer("false");
+    auto token = lexer.getToken();
+    REQUIRE(token.line == 1);
+    REQUIRE(token.pos == 1);
+    REQUIRE(token.value == "false");
+    REQUIRE(token.type == json::detail::TokenType::JBOOL);
+}
+
+TEST_CASE("TestParsingBools")
+{
+    std::string text =
+    R"({
+        "foo" : true,
+        "bar" : false
+    })";
+    auto obj = json::parse(text);
+    REQUIRE(obj->getValue("foo") != nullptr);
+    REQUIRE(obj->getValue("bar") != nullptr);
+}
+
+TEST_CASE("TestLexNull")
+{
+    json::detail::Lexer lexer("null");
+    auto token = lexer.getToken();
+    REQUIRE(token.line == 1);
+    REQUIRE(token.pos == 1);
+    REQUIRE(token.value == "null");
+    REQUIRE(token.type == json::detail::TokenType::JNULL);
+}
+
+TEST_CASE("TestParsingNull")
+{
+    std::string text =
+        R"({
+        "foo" : null
+    })";
+    auto obj = json::parse(text);
+    REQUIRE(obj->getValue("foo") != nullptr);
+}
