@@ -7,13 +7,63 @@ namespace json {
     parse_exception::parse_exception(const std::string& msg)
         : std::runtime_error(msg) {}
 
-    Value* Object::getValue(const std::string& name)
+    bool Value::isType(ValueType type) const
+    {
+        return _type == type;
+    }
+
+    Value::Value(ValueType type)
+        : _type(type) {}
+
+    bool Value::isObject() const
+    {
+        return isType(ValueType::OBJECT);
+    }
+
+    bool Value::isArray() const
+    {
+        return isType(ValueType::ARRAY);
+    }
+
+    bool Value::isString() const
+    {
+        return isType(ValueType::STRING);
+    }
+
+    bool Value::isNumber() const
+    {
+        return isType(ValueType::NUMBER);
+    }
+
+    bool Value::isNull() const
+    {
+        return isType(ValueType::JNULL);
+    }
+
+    bool Value::isBool() const
+    {
+        return isType(ValueType::BOOL);
+    }
+
+    Object::Object()
+        : Value(Value::ValueType::OBJECT) {}
+
+    Value* Object::getValue(const std::string& name) const
     {
         auto it = _values.find(name);
-        if (it == _values.end()) {
-            return nullptr;
+        if (it != _values.end()) {
+            auto& value = it->second;
+            return value.get();
         }
-        return _values[name].get();
+
+        // recursively search for the value in child values that are objects
+        for (auto& p : _values) {
+            auto& value = p.second;
+            if (value->isObject()) {
+                return static_cast<Object*>(value.get())->getValue(name);
+            }
+        }
+        return nullptr;
     }
 
     void Object::addValue(const std::string& name, std::unique_ptr<Value> value)
@@ -21,13 +71,70 @@ namespace json {
         _values.emplace(name, std::move(value));
     }
 
+    Object* Object::getObjectValue(const std::string& name) const
+    {
+        auto value = getValue(name);
+        if (value == nullptr || !value->isObject()) {
+            return nullptr;
+        }
+        return static_cast<Object*>(value);
+    }
+
+    Array* Object::getArrayValue(const std::string& name) const
+    {
+        auto value = getValue(name);
+        if (value == nullptr || !value->isArray()) {
+            return nullptr;
+        }
+        return static_cast<Array*>(value);
+    }
+
+    std::string Object::getStringValue(const std::string& name, const std::string& defaultValue) const
+    {
+        auto value = getValue(name);
+        if (value == nullptr || !value->isString()) {
+            return defaultValue;
+        }
+        return static_cast<String*>(value)->getValue();
+    }
+
+    bool Object::getBoolValue(const std::string& name, bool defaultValue) const
+    {
+        auto value = getValue(name);
+        if (value == nullptr || !value->isBool()) {
+            return defaultValue;
+        }
+        return static_cast<Bool*>(value)->getValue();
+    }
+
+    void* Object::getNullValue(const std::string& name) const
+    {
+        auto value = getValue(name);
+        if (value == nullptr || !value->isNull()) {
+            return nullptr;
+        }
+        return nullptr;
+    }
+
+    double Object::getNumberValue(const std::string& name, double defaultValue) const
+    {
+        auto value = getValue(name);
+        if (value == nullptr || !value->isNumber()) {
+            return defaultValue;
+        }
+        return static_cast<Number*>(value)->getValue();
+    }
+
     String::String(const std::string& value)
-        : _value(value) {}
+        : Value(Value::ValueType::STRING), _value(value) {}
 
     std::string String::getValue() const
     {
         return _value;
     }
+
+    Array::Array()
+        : Value(Value::ValueType::ARRAY) {}
 
     void Array::addValue(std::unique_ptr<Value> value)
     {
@@ -39,6 +146,65 @@ namespace json {
         return _values.size();
     }
 
+    Value* Array::getValue(size_t index) const
+    {
+        return _values.at(index).get();
+    }
+
+    Object* Array::getObjectValue(size_t index) const
+    {
+        auto value = getValue(index);
+        if (value == nullptr || !value->isObject()) {
+            return nullptr;
+        }
+        return static_cast<Object*>(value);
+    }
+
+    Array* Array::getArrayValue(size_t index) const
+    {
+        auto value = getValue(index);
+        if (value == nullptr || !value->isArray()) {
+            return nullptr;
+        }
+        return static_cast<Array*>(value);
+    }
+
+    std::string Array::getStringValue(size_t index, const std::string& defaultValue) const
+    {
+        auto value = getValue(index);
+        if (value == nullptr || !value->isString()) {
+            return defaultValue;
+        }
+        return static_cast<String*>(value)->getValue();
+    }
+
+    bool Array::getBoolValue(size_t index, bool defaultValue) const
+    {
+        auto value = getValue(index);
+        if (value == nullptr || !value->isBool()) {
+            return defaultValue;
+        }
+        return static_cast<Bool*>(value)->getValue();
+    }
+
+    double Array::getNumberValue(size_t index, double defaultValue) const
+    { 
+        auto value = getValue(index);
+        if (value == nullptr || !value->isNumber()) {
+            return defaultValue;
+        }
+        return static_cast<Number*>(value)->getValue();
+    }
+
+    void* Array::getNullValue(size_t index) const
+    {
+        auto value = getValue(index);
+        if (value == nullptr || !value->isNull()) {
+            return nullptr;
+        }
+        return nullptr;
+    }
+
     std::unique_ptr<Object> parse(const std::string& text)
     {
         detail::Lexer lexer(text);
@@ -47,12 +213,15 @@ namespace json {
     }
 
     Bool::Bool(bool value)
-        : _value(value) {}
+        : Value(Value::ValueType::BOOL), _value(value) {}
 
     bool Bool::getValue() const
     {
         return _value;
     }
+
+    Null::Null()
+        : Value(Value::ValueType::JNULL) {}
 
     void* Null::getValue() const
     {
@@ -60,7 +229,7 @@ namespace json {
     }
 
     Number::Number(double value)
-        : _value(value) {}
+        : Value(Value::ValueType::NUMBER), _value(value) {}
 
     double Number::getValue() const
     {

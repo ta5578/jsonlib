@@ -3,9 +3,8 @@
 #include "jsonpp.hpp"
 
 #define JSONPP_DOUBLE_EQUALS(obj, name, expected) do {\
-    json::Number* num = static_cast<json::Number*>(obj->getValue(name));\
     auto target = Approx((expected)).epsilon(std::numeric_limits<double>::epsilon() * 100);\
-    REQUIRE(num->getValue() == target);\
+    REQUIRE(obj->getNumberValue(name) == target);\
 } while (0)
 
 TEST_CASE("TestEmptyStringThrows")
@@ -61,8 +60,7 @@ TEST_CASE("TestParsingStringPairObject")
         "foo" : "bar"
     })";
     auto obj = json::parse(text);
-    auto value = obj->getValue("foo");
-    REQUIRE(value != nullptr);
+    REQUIRE(obj->getStringValue("foo") == "bar");
 }
 
 TEST_CASE("TestParsingObjectList")
@@ -73,10 +71,8 @@ TEST_CASE("TestParsingObjectList")
         "abc" : "def"
     })";
     auto obj = json::parse(text);
-    auto value = obj->getValue("foo");
-    REQUIRE(value != nullptr);
-    auto value2 = obj->getValue("abc");
-    REQUIRE(value2 != nullptr);
+    REQUIRE(obj->getStringValue("foo") == "bar");
+    REQUIRE(obj->getStringValue("abc") == "def");
 }
 
 TEST_CASE("TestParsingSingleElementArrayObject")
@@ -86,8 +82,9 @@ TEST_CASE("TestParsingSingleElementArrayObject")
          "foo" : [ "bar" ]
     })";
     auto obj = json::parse(text);
-    auto value = obj->getValue("foo");
+    auto value = obj->getArrayValue("foo");
     REQUIRE(value != nullptr);
+    REQUIRE(value->getStringValue(0) == "bar");
 }
 
 TEST_CASE("TestParsingMultiElementArrayObject")
@@ -97,8 +94,11 @@ TEST_CASE("TestParsingMultiElementArrayObject")
         "foo" : [ "bar" , "baz" ]
     })";
     auto obj = json::parse(text);
-    auto value = obj->getValue("foo");
+    auto value = obj->getArrayValue("foo");
     REQUIRE(value != nullptr);
+    REQUIRE(value->size() == 2);
+    REQUIRE(value->getStringValue(0) == "bar");
+    REQUIRE(value->getStringValue(1) == "baz");
 }
 
 TEST_CASE("TestLexBoolTrue")
@@ -129,8 +129,8 @@ TEST_CASE("TestParsingBools")
         "bar" : false
     })";
     auto obj = json::parse(text);
-    REQUIRE(obj->getValue("foo") != nullptr);
-    REQUIRE(obj->getValue("bar") != nullptr);
+    REQUIRE(obj->getBoolValue("foo") == true);
+    REQUIRE(obj->getBoolValue("bar") == false);
 }
 
 TEST_CASE("TestLexNull")
@@ -150,7 +150,7 @@ TEST_CASE("TestParsingNull")
         "foo" : null
     })";
     auto obj = json::parse(text);
-    REQUIRE(obj->getValue("foo") != nullptr);
+    REQUIRE(obj->getNullValue("foo") == nullptr);
 }
 
 TEST_CASE("TestParseDigitOnlyNumber")

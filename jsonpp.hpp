@@ -11,12 +11,64 @@ namespace json {
         parse_exception(const std::string& msg);
     };
 
-    class Value {};
+    class Value {
+    protected:
+        enum class ValueType {
+            OBJECT,
+            ARRAY,
+            STRING,
+            BOOL,
+            JNULL,
+            NUMBER
+        } _type;
+
+        bool isType(ValueType type) const;
+        Value(ValueType type);
+
+    public:
+        bool isObject() const;
+        bool isArray() const;
+        bool isString() const;
+        bool isNumber() const;
+        bool isNull() const;
+        bool isBool() const;
+    };
+
+    class Object;
+    class Array;
+
+    class Array : public Value {
+        std::vector<std::unique_ptr<Value>> _values;
+    public:
+        Array();
+        void addValue(std::unique_ptr<Value> value);
+        size_t size() const;
+
+        Value* getValue(size_t index) const;
+        Object* getObjectValue(size_t index) const;
+        Array* getArrayValue(size_t index) const;
+
+        std::string getStringValue(size_t index, const std::string& defaulValue = "") const;
+        bool getBoolValue(size_t index, bool defaultValue = false) const;
+        double getNumberValue(size_t index, double defaultValue = 0.0f) const;
+        void* getNullValue(size_t index) const;
+
+    };
 
     class Object : public Value {
         std::map<std::string, std::unique_ptr<Value>> _values;
     public:
-        Value* getValue(const std::string& name);
+        Object();
+
+        Value* getValue(const std::string& name) const;
+        Object* getObjectValue(const std::string& name) const;
+        Array* getArrayValue(const std::string& name) const;
+
+        std::string getStringValue(const std::string& name, const std::string& defaulValue = "") const;
+        bool getBoolValue(const std::string& name, bool defaultValue = false) const;
+        double getNumberValue(const std::string& name, double defaultValue = 0.0f) const;
+        void* getNullValue(const std::string& name) const;
+
         void addValue(const std::string& name, std::unique_ptr<Value> value);
     };
 
@@ -27,13 +79,6 @@ namespace json {
         std::string getValue() const;
     };
 
-    class Array : public Value {
-        std::vector<std::unique_ptr<Value>> _values;
-    public:
-        void addValue(std::unique_ptr<Value> value);
-        size_t size() const;
-    };
-
     class Bool : public Value {
         bool _value;
     public:
@@ -42,6 +87,8 @@ namespace json {
     };
 
     class Null : public Value {
+    public:
+        Null();
         void* getValue() const;
     };
 
