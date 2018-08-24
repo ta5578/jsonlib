@@ -13,7 +13,10 @@ directory recognized by your compiler and you are good to go.
 #include "jsonpp.h"
 // ... load the JSON somehow as a string
 // here we use in-place text as an example
-auto text = "{ \"foo\" : \"bar\" }"
+auto text = 
+ R"({ 
+        "foo" : "bar"
+   })";
 
 // parse the JSON and return an in-memory DOM. If parsing fails, a json::parse_exception is thrown
 auto obj = json::parse(text); 
