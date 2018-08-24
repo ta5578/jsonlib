@@ -2,6 +2,12 @@
 #include "test/catch.hpp"
 #include "jsonpp.hpp"
 
+#define JSONPP_DOUBLE_EQUALS(obj, name, expected) do {\
+    json::Number* num = static_cast<json::Number*>(obj->getValue(name));\
+    auto target = Approx((expected)).epsilon(std::numeric_limits<double>::epsilon() * 100);\
+    REQUIRE(num->getValue() == target);\
+} while (0)
+
 TEST_CASE("TestEmptyStringThrows")
 {
     REQUIRE_THROWS_AS(json::parse(""), json::parse_exception);
@@ -154,7 +160,43 @@ TEST_CASE("TestParseDigitOnlyNumber")
         "foo" : 12345
     })";
     auto obj = json::parse(text);
-    json::Number* num = static_cast<json::Number*>(obj->getValue("foo"));
-    auto target = Approx(12345).epsilon(std::numeric_limits<double>::epsilon() * 100);
-    REQUIRE(num->getValue() == target);
+    JSONPP_DOUBLE_EQUALS(obj, "foo", 12345);
+}
+
+TEST_CASE("TestParseNumberWithStartingNegativeAndDigitsOnly")
+{
+    std::string text =
+        R"({
+        "foo" : -12345
+    })";
+    auto obj = json::parse(text);
+    JSONPP_DOUBLE_EQUALS(obj, "foo", -12345);
+}
+
+TEST_CASE("TestParseNumberWithStartingPositiveAndDigitsOnly")
+{
+    std::string text =
+        R"({
+        "foo" : +12345
+    })";
+    auto obj = json::parse(text);
+    JSONPP_DOUBLE_EQUALS(obj, "foo", +12345);
+}
+
+TEST_CASE("TestParseIllegalNumberWithSignInMiddle")
+{
+    std::string text =
+        R"({
+        "foo" : 12-345
+    })";
+    REQUIRE_THROWS_AS(json::parse(text), json::parse_exception);
+}
+
+TEST_CASE("TestParseIllegalNumberSpaceSeparated")
+{
+    std::string text =
+        R"({
+        "foo" : 12 345
+    })";
+    REQUIRE_THROWS_AS(json::parse(text), json::parse_exception);
 }
