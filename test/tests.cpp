@@ -200,3 +200,22 @@ TEST_CASE("TestParseIllegalNumberSpaceSeparated")
     })";
     REQUIRE_THROWS_AS(json::parse(text), json::parse_exception);
 }
+
+TEST_CASE("TestParseNumberDecimal")
+{
+    std::string text =
+        R"({
+        "foo" : 12345.67
+    })";
+    auto obj = json::parse(text);
+    JSONPP_DOUBLE_EQUALS(obj, "foo", 12345.67);
+}
+
+TEST_CASE("TestParseNumberWithMultipleDecimals")
+{
+    std::string text =
+        R"({
+        "foo" : 12345.67.0
+    })";
+    REQUIRE_THROWS_AS(json::parse(text), json::parse_exception);
+}

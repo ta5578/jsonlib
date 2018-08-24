@@ -93,12 +93,20 @@ namespace json {
         {
             std::string value(1, initialChar);
             bool isSpace = false;
+            bool decimalFound = false;
             while (!isDoneReading() && !isSpace) {
                 char c = _text[_cursor++];
                 if (std::isspace(c)) {
                     isSpace = true;
                 } else if (std::isdigit(c)) {
                     value += c;
+                } else if (c == '.') {
+                    if (decimalFound) {
+                        throw parse_exception(json::detail::format("Multiple decimals found in parsing number sequence at (%d:%d)!", _line, _pos));
+                    } else {
+                        decimalFound = true;
+                        value += c;
+                    }
                 } else { // for now only digits accepted
                     throw parse_exception(json::detail::format("Expecting <digit> in number sequence but found '%c' instead!", c));
                 }
