@@ -3,6 +3,7 @@
 #include <stdexcept>
 #include <map>
 #include <memory>
+#include <vector>
 
 namespace json {
 
@@ -26,6 +27,13 @@ namespace json {
         std::string getValue() const;
     };
 
+    class Array : public Value {
+        std::vector<std::unique_ptr<Value>> _values;
+    public:
+        void addValue(std::unique_ptr<Value> value);
+        size_t size() const;
+    };
+
     namespace detail {
 
         enum class TokenType {
@@ -34,14 +42,25 @@ namespace json {
             COLON,
             STRING,
             COMMA,
+            LBRACKET,
+            RBRACKET,
             NONE
         };
 
-        typedef std::pair<TokenType, std::string> Token;
+        struct Token {
+            TokenType type;
+            std::string value;
+            int line;
+            int pos;
+
+            Token(TokenType type = TokenType::NONE, const std::string& value = "", int line = 1, int pos = 1);
+        };
 
         class Lexer {
             size_t _cursor;
             std::string _text;
+            int _line;
+            int _pos;
 
             bool isDoneReading() const;
             Token lexString();
@@ -50,6 +69,21 @@ namespace json {
             Lexer(const std::string& text);
 
             Token getToken();
+        };
+
+        class Parser {
+            Lexer lexer;
+            Token currentToken;
+
+            std::unique_ptr<Object> parseObject();
+            std::unique_ptr<Value> parseValue();
+            std::unique_ptr<Array> parseArray();
+            std::unique_ptr<Object> parseValueList();
+            void raiseError(const std::string& expected);
+
+        public:
+            std::unique_ptr<Object> parse();
+            Parser(Lexer lexer);
         };
     }
 

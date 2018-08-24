@@ -1,5 +1,6 @@
 ﻿#include "jsonlib.h"
 #include <cctype>
+#include <cstdlib>
 
 namespace json {
     
@@ -28,10 +29,39 @@ namespace json {
         return _value;
     }
 
+    void Array::addValue(std::unique_ptr<Value> value)
+    {
+        _values.emplace_back(std::move(value));
+    }
+
+    size_t Array::size() const
+    {
+        return _values.size();
+    }
+
+    std::unique_ptr<Object> parse(const std::string& text)
+    {
+        detail::Lexer lexer(text);
+        detail::Parser parser(lexer);
+        return parser.parse();
+    }
+
     namespace detail {
+
+        template <class... Args>
+        static std::string format(const char* fmt, Args&&... args)
+        {
+            auto len = std::snprintf(nullptr, 0, fmt, std::forward<Args>(args)...) + 1;
+            std::vector<char> buf(len, '\0');
+            std::snprintf(buf.data(), len, fmt, std::forward<Args>(args)...);
+            return buf.data();
+        }
+
+        Token::Token(TokenType type, const std::string& value, int line, int pos)
+            : type(type), value(value), line(line), pos(pos) {}
         
         Lexer::Lexer(const std::string& text)
-            : _cursor(0), _text(text) {}
+            : _cursor(0), _text(text), _line(1), _pos(1) {}
 
         bool Lexer::isDoneReading() const
         {
@@ -55,108 +85,158 @@ namespace json {
                 throw parse_exception("Terminating \" for string not found!");
             }
 
-            return {TokenType::STRING, str};
+            return {TokenType::STRING, str, _line, _pos };
         }
 
 
         Token Lexer::getToken() 
         {
-            // skip white space
+            // skip white space and account for lines and position in the line
             while (std::isspace(_text[_cursor]) && !isDoneReading()) {
+                if (_text[_cursor] == '\n') {
+                    ++_line;
+                    _pos = 1;
+                } else {
+                    ++_pos;
+                }
                 ++_cursor;
             }
 
             while (!isDoneReading()) {
                 char c = _text[_cursor++];
                 if (c == '{') {
-                    return {TokenType::LBRACE, "{"};
+                    return {TokenType::LBRACE, "{", _line, _pos};
                 } else if (c == '}') {
-                    return {TokenType::RBRACE, "}"};
+                    return {TokenType::RBRACE, "}", _line, _pos };
                 } else if (c == '\"') {
                     return lexString();
                 } else if (c == ':') {
-                    return {TokenType::COLON, ":"};
+                    return {TokenType::COLON, ":", _line, _pos };
                 } else if (c == ',') {
-                    return {TokenType::COMMA, ","};
+                    return {TokenType::COMMA, ",", _line, _pos };
+                } else if (c == '[') {
+                    return { TokenType::LBRACKET, "[", _line, _pos };
+                } else if (c == ']') {
+                    return { TokenType::RBRACKET, "]", _line, _pos };
                 } else {
                     throw parse_exception(c + " is not a valid token!");
                 }
             }
             return {TokenType::NONE, ""};
         }
-    }
 
-    static std::unique_ptr<json::Value> parseValue(detail::Lexer& lexer)
-    {
-        auto tok = lexer.getToken();
-        // hard code strings for the moment
-        if (tok.first != detail::TokenType::STRING) {
-            throw parse_exception("Only expecting <string> type values but got " + tok.second + " instead!");
-        }
-        return std::make_unique<json::String>(tok.second);
-    }
-
-    /*
-    Object definition:
-    '{' -> "name" -> ':' -> value -> [,] -> '}'
-    */
-    static std::unique_ptr<json::Object> parseObject(detail::Lexer &lexer)
-    {
-        auto nextTok = lexer.getToken();
-        if (nextTok.first != detail::TokenType::LBRACE) {
-            throw parse_exception("Expecting '{' token but got " + nextTok.second + " instead!");
-        }
-                
-        nextTok = lexer.getToken();
-
-        // an empty object
-        if (nextTok.first == detail::TokenType::RBRACE) {
-            return std::make_unique<Object>();
+        void Parser::raiseError(const std::string& expected)
+        {
+            throw parse_exception(json::detail::format("Expecting '%s' at line %d:%d but got '%s' instead!", expected.c_str(), currentToken.line, currentToken.pos, currentToken.value.c_str()));
         }
 
-        auto obj = std::make_unique<Object>();
-        bool isList = false;
-        do {
-            // name
-            if (nextTok.first != detail::TokenType::STRING) {
-                throw parse_exception("String token expected but got " + nextTok.second + " instead!");
-            }
-            auto name = nextTok.second;
-
-            // colon
-            nextTok = lexer.getToken();
-            if (nextTok.first != detail::TokenType::COLON) {
-                throw parse_exception("Expecting ':' token but got " + nextTok.second + " instead!");
+        std::unique_ptr<Object> Parser::parseObject()
+        {
+            currentToken = lexer.getToken();
+            if (currentToken.type != detail::TokenType::LBRACE) {
+                raiseError("{");
             }
 
-            // value
-            auto value = parseValue(lexer);
+            currentToken = lexer.getToken();
 
-            obj->addValue(name, std::move(value));
-            
-            // if there is a comma, we continue parsing the list
-            // otherwise, we are at the end of the name/value pairs
-            nextTok = lexer.getToken();
-            if (nextTok.first == detail::TokenType::COMMA) {
-                isList = true;
-                nextTok = lexer.getToken(); // eat the comma
+            // an empty object
+            if (currentToken.type == detail::TokenType::RBRACE) {
+                return std::make_unique<Object>();
+            }
+
+            auto obj = parseValueList();
+
+            // closing brace
+            if (currentToken.type != detail::TokenType::RBRACE) {
+                raiseError("}");
+            }
+
+            return obj;
+        }
+
+        std::unique_ptr<Array> Parser::parseArray()
+        {
+            currentToken = lexer.getToken();
+            // empty array
+            if (currentToken.type == TokenType::RBRACKET) {
+                return std::make_unique<Array>();
+            }
+
+            auto arr = std::make_unique<Array>();
+            bool isList = false;
+            do {
+                arr->addValue(parseValue());
+
+                currentToken = lexer.getToken();
+                if (currentToken.type == TokenType::COMMA) {
+                    isList = true;
+                    currentToken = lexer.getToken(); // eat the comma
+                } else {
+                    isList = false;
+                }
+            } while (isList);
+
+            if (currentToken.type != TokenType::RBRACKET) {
+                raiseError("]");
+            }
+
+            return arr;
+        }
+
+        std::unique_ptr<Value> Parser::parseValue()
+        {
+            if (currentToken.type == detail::TokenType::STRING) {
+                return std::make_unique<json::String>(currentToken.value);
+            } else if (currentToken.type == detail::TokenType::LBRACKET) {
+                return parseArray();
             } else {
-                isList = false;
+                raiseError("<value>");
             }
-
-        } while (isList);
-
-        // closing brace
-        if (nextTok.first != detail::TokenType::RBRACE) {
-            throw parse_exception("Expecting '}' token but got " + nextTok.second + " instead!");
+            return nullptr;
         }
 
-        return obj;
-    }
+        std::unique_ptr<json::Object> Parser::parseValueList()
+        {
+            auto obj = std::make_unique<Object>();
+            bool isList = false;
+            do {
+                // name
+                if (currentToken.type != detail::TokenType::STRING) {
+                    raiseError("<string>");
+                }
+                auto name = currentToken.value;
 
-    std::unique_ptr<Object> parse(const std::string& text)
-    {
-        detail::Lexer lexer(text);
-        return parseObject(lexer);
+                // colon
+                currentToken = lexer.getToken();
+                if (currentToken.type != detail::TokenType::COLON) {
+                    raiseError(":");
+                }
+                currentToken = lexer.getToken(); // eat the colon
+
+                // value
+                auto value = parseValue();
+                obj->addValue(name, std::move(value));
+
+                // if there is a comma, we continue parsing the list
+                // otherwise, we are at the end of the name/value pairs
+                currentToken = lexer.getToken();
+                if (currentToken.type == detail::TokenType::COMMA) {
+                    isList = true;
+                    currentToken = lexer.getToken(); // eat the comma
+                } else {
+                    isList = false;
+                }
+
+            } while (isList);
+            return obj;
+        }
+
+        std::unique_ptr<Object> Parser::parse()
+        {
+            return parseObject();
+        }
+
+        Parser::Parser(Lexer lexer)
+            : lexer(lexer) {}
     }
 }

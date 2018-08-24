@@ -29,14 +29,16 @@ TEST_CASE("TestMissingClosingObjectBracketThrows")
 
 TEST_CASE("TestLexingString")
 {
-    json::detail::Lexer lexer("\"foo\"");
+    std::string text = R"("foo")";
+    json::detail::Lexer lexer(text);
     auto tok = lexer.getToken();
-    REQUIRE(tok.second == "foo");
+    REQUIRE(tok.value == "foo");
 }
 
 TEST_CASE("TestLexingStringMissingTerminatorThrows")
 {
-    json::detail::Lexer lexer("\"foo");
+    std::string text = R"("foo)";
+    json::detail::Lexer lexer(text);
     REQUIRE_THROWS_AS(lexer.getToken(), json::parse_exception);
 }
 
@@ -48,7 +50,10 @@ TEST_CASE("TestStringValue")
 
 TEST_CASE("TestParsingStringPairObject")
 {
-    std::string text = "{ \"foo\" : \"bar\" }";
+    std::string text =
+    R"({
+        "foo" : "bar"
+    })";
     auto obj = json::parse(text);
     auto value = obj->getValue("foo");
     REQUIRE(value != nullptr);
@@ -57,13 +62,35 @@ TEST_CASE("TestParsingStringPairObject")
 TEST_CASE("TestParsingObjectList")
 {
     std::string text = 
-    "{\
-        \"foo\" : \"bar\" ,\
-        \"abc\" : \"def\"\
-    }";
+    R"({
+        "foo" : "bar" ,
+        "abc" : "def"
+    })";
     auto obj = json::parse(text);
     auto value = obj->getValue("foo");
     REQUIRE(value != nullptr);
     auto value2 = obj->getValue("abc");
     REQUIRE(value2 != nullptr);
+}
+
+TEST_CASE("TestParsingSingleElementArrayObject")
+{
+    std::string text =
+    R"({
+         "foo" : [ "bar" ]
+    })";
+    auto obj = json::parse(text);
+    auto value = obj->getValue("foo");
+    REQUIRE(value != nullptr);
+}
+
+TEST_CASE("TestParsingMultiElementArrayObject")
+{
+    std::string text =
+    R"({
+        "foo" : [ "bar" , "baz" ]
+    })";
+    auto obj = json::parse(text);
+    auto value = obj->getValue("foo");
+    REQUIRE(value != nullptr);
 }
