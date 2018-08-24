@@ -91,24 +91,66 @@ namespace json {
 
         Token Lexer::lexNumber(char initialChar)
         {
+            enum NumberState { SIGN, DIGIT, DECIMAL, EXPONENT, EXPONENT_DIGIT, END} state;
+            if (initialChar == '+' || initialChar == '-') {
+                state = SIGN;
+            } else {
+                state = DIGIT;
+            }
+
             std::string value(1, initialChar);
-            bool isSpace = false;
-            bool decimalFound = false;
-            while (!isDoneReading() && !isSpace) {
+            while (!isDoneReading() && state != END) {
                 char c = _text[_cursor++];
                 if (std::isspace(c)) {
-                    isSpace = true;
-                } else if (std::isdigit(c)) {
-                    value += c;
-                } else if (c == '.') {
-                    if (decimalFound) {
-                        throw parse_exception(json::detail::format("Multiple decimals found in parsing number sequence at (%d:%d)!", _line, _pos));
-                    } else {
-                        decimalFound = true;
+                    state = END;
+                }
+
+                switch (state) {
+                case SIGN:
+                    if (std::isdigit(c)) {
                         value += c;
+                        state = DIGIT;
                     }
-                } else { // for now only digits accepted
-                    throw parse_exception(json::detail::format("Expecting <digit> in number sequence but found '%c' instead!", c));
+                    break;
+                case DIGIT:
+                    if (std::isdigit(c)) {
+                        value += c;
+                    } else if (c == '.') {
+                        value += c;
+                        state = DECIMAL;
+                    } else {
+                        throw parse_exception(json::detail::format("Expecting <digit> or <decimal> at (%d:%d) but found '%c' found!", _line, _pos, c));
+                    }
+                    break;
+                case DECIMAL:
+                    if (std::isdigit(c)) {
+                        value += c;
+                    } else if (c == 'e' || c == 'E') {
+                        value += c;
+                        state = EXPONENT;
+                    } else {
+                        throw parse_exception(json::detail::format("Expecting <digit> or <exponent> at (%d:%d) but '%c' found!", _line, _pos, c));
+                    }
+                    break;
+                case EXPONENT:
+                    if (c == '+' || c == '-') {
+                        value += c;
+                    } else if (std::isdigit(c)) {
+                        value += c;
+                        state = EXPONENT_DIGIT;
+                    } else {
+                        throw parse_exception(json::detail::format("Expecting <digit> or <sign> at (%d:%d) but '%c' found!", _line, _pos, c));
+                    }
+                    break;
+                case EXPONENT_DIGIT:
+                    if (std::isdigit(c)) {
+                        value += c;
+                    } else {
+                        throw parse_exception(json::detail::format("Expecting <digit> after exponent value at (%d:%d) but '%c' found!", _line, _pos, c));
+                    }
+                    break;
+                default:
+                    break;
                 }
             }
             return { TokenType::NUMBER, value, _line, _pos };

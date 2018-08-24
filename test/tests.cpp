@@ -146,7 +146,7 @@ TEST_CASE("TestLexNull")
 TEST_CASE("TestParsingNull")
 {
     std::string text =
-        R"({
+    R"({
         "foo" : null
     })";
     auto obj = json::parse(text);
@@ -156,7 +156,7 @@ TEST_CASE("TestParsingNull")
 TEST_CASE("TestParseDigitOnlyNumber")
 {
     std::string text =
-        R"({
+    R"({
         "foo" : 12345
     })";
     auto obj = json::parse(text);
@@ -166,7 +166,7 @@ TEST_CASE("TestParseDigitOnlyNumber")
 TEST_CASE("TestParseNumberWithStartingNegativeAndDigitsOnly")
 {
     std::string text =
-        R"({
+    R"({
         "foo" : -12345
     })";
     auto obj = json::parse(text);
@@ -176,7 +176,7 @@ TEST_CASE("TestParseNumberWithStartingNegativeAndDigitsOnly")
 TEST_CASE("TestParseNumberWithStartingPositiveAndDigitsOnly")
 {
     std::string text =
-        R"({
+    R"({
         "foo" : +12345
     })";
     auto obj = json::parse(text);
@@ -186,7 +186,7 @@ TEST_CASE("TestParseNumberWithStartingPositiveAndDigitsOnly")
 TEST_CASE("TestParseIllegalNumberWithSignInMiddle")
 {
     std::string text =
-        R"({
+    R"({
         "foo" : 12-345
     })";
     REQUIRE_THROWS_AS(json::parse(text), json::parse_exception);
@@ -195,7 +195,7 @@ TEST_CASE("TestParseIllegalNumberWithSignInMiddle")
 TEST_CASE("TestParseIllegalNumberSpaceSeparated")
 {
     std::string text =
-        R"({
+    R"({
         "foo" : 12 345
     })";
     REQUIRE_THROWS_AS(json::parse(text), json::parse_exception);
@@ -204,7 +204,7 @@ TEST_CASE("TestParseIllegalNumberSpaceSeparated")
 TEST_CASE("TestParseNumberDecimal")
 {
     std::string text =
-        R"({
+    R"({
         "foo" : 12345.67
     })";
     auto obj = json::parse(text);
@@ -214,8 +214,65 @@ TEST_CASE("TestParseNumberDecimal")
 TEST_CASE("TestParseNumberWithMultipleDecimals")
 {
     std::string text =
-        R"({
+    R"({
         "foo" : 12345.67.0
+    })";
+    REQUIRE_THROWS_AS(json::parse(text), json::parse_exception);
+}
+
+TEST_CASE("TestParseNumberWithExponentDecimals")
+{
+    std::string text =
+        R"({
+        "foo" : 12345.67e1
+    })";
+    auto obj = json::parse(text);
+    JSONPP_DOUBLE_EQUALS(obj, "foo", 123456.7);
+}
+
+TEST_CASE("TestParseNumberWithPositiveExponentDecimals")
+{
+    std::string text =
+    R"({
+        "foo" : 12345.67e+1
+    })";
+    auto obj = json::parse(text);
+    JSONPP_DOUBLE_EQUALS(obj, "foo", 123456.7);
+}
+
+TEST_CASE("TestParseNumberWithNegativeExponentDecimals")
+{
+    std::string text =
+    R"({
+        "foo" : 12345.67e-1
+    })";
+    auto obj = json::parse(text);
+    JSONPP_DOUBLE_EQUALS(obj, "foo", 1234.567);
+}
+
+TEST_CASE("TestParseNumberWithExponentMultipleDecimals")
+{
+    std::string text =
+    R"({
+        "foo" : 12345.67e1.0
+    })";
+    REQUIRE_THROWS_AS(json::parse(text), json::parse_exception);
+}
+
+TEST_CASE("TestParseNumberWithExponentBeforeDecimal")
+{
+    std::string text =
+    R"({
+        "foo" : 12345e1.67
+    })";
+    REQUIRE_THROWS_AS(json::parse(text), json::parse_exception);
+}
+
+TEST_CASE("TestParseNumberWithNonDigit")
+{
+    std::string text =
+    R"({
+        "foo" : 12345f.67
     })";
     REQUIRE_THROWS_AS(json::parse(text), json::parse_exception);
 }
