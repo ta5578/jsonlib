@@ -59,6 +59,14 @@ namespace json {
         return nullptr;
     }
 
+    Number::Number(double value)
+        : _value(value) {}
+
+    double Number::getValue() const
+    {
+        return _value;
+    }
+
     namespace detail {
 
         template <class... Args>
@@ -79,6 +87,23 @@ namespace json {
         bool Lexer::isDoneReading() const
         {
             return _cursor >= _text.size();
+        }
+
+        Token Lexer::lexNumber(char initialChar)
+        {
+            std::string value(1, initialChar);
+            bool isSpace = false;
+            while (!isDoneReading() && !isSpace) {
+                char c = _text[_cursor++];
+                if (std::isspace(c)) {
+                    isSpace = true;
+                } else if (std::isdigit(c)) {
+                    value += c;
+                } else { // for now only digits accepted
+                    throw parse_exception(json::detail::format("Expecting <digit> in number sequence but found '%c' instead!", c));
+                }
+            }
+            return { TokenType::NUMBER, value, _line, _pos };
         }
 
         std::string Lexer::lexValueSequence(char initialChar, const std::string& expected)
@@ -162,6 +187,8 @@ namespace json {
                     return lexBool(c, "false");
                 } else if (c == 'n') {
                     return lexNull();
+                } else if (c == '-' || c == '+' || std::isdigit(c)) {
+                    return lexNumber(c);
                 } else {
                     throw parse_exception(c + " is not a valid token!");
                 }
@@ -237,6 +264,8 @@ namespace json {
                 return std::make_unique<json::Bool>(currentToken.value == "true");
             } else if (currentToken.type == detail::TokenType::JNULL) {
                 return std::make_unique<json::Null>();
+            } else if (currentToken.type == detail::TokenType::NUMBER) {
+                return std::make_unique<json::Number>(std::stod(currentToken.value));
             } else {
                 raiseError("<value>");
             }

@@ -146,3 +146,15 @@ TEST_CASE("TestParsingNull")
     auto obj = json::parse(text);
     REQUIRE(obj->getValue("foo") != nullptr);
 }
+
+TEST_CASE("TestParseDigitOnlyNumber")
+{
+    std::string text =
+        R"({
+        "foo" : 12345
+    })";
+    auto obj = json::parse(text);
+    json::Number* num = static_cast<json::Number*>(obj->getValue("foo"));
+    auto target = Approx(12345).epsilon(std::numeric_limits<double>::epsilon() * 100);
+    REQUIRE(num->getValue() == target);
+}

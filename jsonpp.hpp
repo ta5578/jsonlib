@@ -45,6 +45,13 @@ namespace json {
         void* getValue() const;
     };
 
+    class Number : public Value {
+        double _value;
+    public:
+        Number(double value);
+        double getValue() const;
+    };
+
     namespace detail {
 
         enum class TokenType {
@@ -57,6 +64,7 @@ namespace json {
             RBRACKET,
             JBOOL, // this name prevents macro collision with BOOL macro from WinAPI
             JNULL, // this name prevents macro collision with NULL macro
+            NUMBER,
             NONE
         };
 
@@ -80,7 +88,7 @@ namespace json {
             std::string lexValueSequence(char initialChar, const std::string& expected);
             Token lexBool(char initialChar, const std::string& expected);
             Token lexNull();
-
+            Token lexNumber(char initialChar);
         public:
             Lexer(const std::string& text);
 
