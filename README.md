@@ -34,10 +34,10 @@ cd build
 cmake ..
 ```
 
-By default, CMake will generate *debug* versions of the library. To enable release builds, build with CMAKE_BUILD_TYPE set to "release". Note that this will affect single generators like _Make_ and _Ninja_. Other generators like the _Visual Studio_ generator allow you to customize the configuration type once the generator itself is built.
+By default, CMake will generate *release* versions of the library. To enable debug builds, build with CMAKE_BUILD_TYPE set to "debug". Note that this will affect single generators like _Make_ and _Ninja_. Other generators like the _Visual Studio_ generator allow you to customize the configuration type once the generator itself is built.
 
 ```
-cmake .. -DCMAKE_BUILD_TYPE=release
+cmake .. -DCMAKE_BUILD_TYPE=debug
 ```
 
 ## Libraries
