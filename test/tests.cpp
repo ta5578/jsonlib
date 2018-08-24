@@ -1,6 +1,6 @@
 #define CATCH_CONFIG_MAIN
 #include "test/catch.hpp"
-#include "jsonlib.h"
+#include "jsonpp.hpp"
 
 TEST_CASE("TestEmptyStringThrows")
 {

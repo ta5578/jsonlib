@@ -1,5 +1,5 @@
 ﻿cmake_minimum_required (VERSION 3.5.1)
-project(jsonlib)
+project(jsonpp)
 
 set (CMAKE_CXX_STANDARD 14)
 
@@ -29,21 +29,21 @@ endif()
 message("Compiling with ${CMAKE_CXX_FLAGS}")
 
 # Set up the output directory for builds
-set(JSONLIB_OUTPUT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/build")
-message("Current output directory ${JSONLIB_OUTPUT_DIR}")
+set(JSONPP_OUTPUT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/build")
+message("Current output directory ${JSONPP_OUTPUT_DIR}")
 
 include_directories(.)
 
-set(JSONLIB_SOURCES "jsonlib.h" "jsonlib.cpp")
-add_library(jsonlib STATIC ${JSONLIB_SOURCES})
-set_target_properties(jsonlib PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${JSONLIB_OUTPUT_DIR}")
+set(JSONPP_SOURCES "jsonpp.hpp" "jsonpp.cpp")
+add_library(jsonpp STATIC ${JSONPP_SOURCES})
+set_target_properties(jsonpp PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${JSONPP_OUTPUT_DIR}")
 
 enable_testing()
 
-set(JSONLIB_TEST_SOURCES "jsonlib.h" "test/catch.hpp" "test/tests.cpp")
-add_executable(testjsonlib ${JSONLIB_TEST_SOURCES})
-target_link_libraries(testjsonlib jsonlib)
-set_target_properties(testjsonlib PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${JSONLIB_OUTPUT_DIR}")
+set(JSONPP_TEST_SOURCES "jsonpp.hpp" "test/catch.hpp" "test/tests.cpp")
+add_executable(testjsonpp ${JSONPP_TEST_SOURCES})
+target_link_libraries(testjsonpp jsonpp)
+set_target_properties(testjsonpp PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${JSONPP_OUTPUT_DIR}")
 
-add_test(jsonlib-test ${JSONLIB_OUTPUT_DIR}/testjsonlib)
+add_test(jsonpp-test ${JSONPP_OUTPUT_DIR}/testjsonpp)
 
