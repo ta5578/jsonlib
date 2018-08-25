@@ -317,12 +317,18 @@ namespace json {
             default:
                 break;
             }
+
+            if (state != END) {
+                next(); // get the next character ready
+            }
+
             return state;
         }
 
         Token Lexer::lexNumber()
         {
-            char initialChar = curr();
+            const char initialChar = curr();
+            const int initialPosition = _pos; // get the position for reporting
 
             NumberState state;
             if (initialChar == '+' || initialChar == '-') {
@@ -335,9 +341,8 @@ namespace json {
             std::string value(1, initialChar);
             while (!isDoneReading() && state != END) {
                 state = processState(state, value);
-                next();
             }
-            return { TokenType::NUMBER, value, _line, _pos };
+            return { TokenType::NUMBER, value, _line, initialPosition };
         }
 
         std::string Lexer::lexValueSequence(const std::string& expected)
@@ -356,14 +361,16 @@ namespace json {
 
         Token Lexer::lexBool(const std::string& expected)
         {
+            const int initialPosition = _pos; // get the position for reporting
             auto value = lexValueSequence(expected);
-            return { TokenType::JBOOL, value, _line, _pos };
+            return { TokenType::JBOOL, value, _line, initialPosition };
         }
 
         Token Lexer::lexNull()
         {
+            const int initialPosition = _pos; // get the position for reporting
             auto value = lexValueSequence("null");
-            return { TokenType::JNULL, value, _line, _pos };
+            return { TokenType::JNULL, value, _line, initialPosition };
         }
 
         Token Lexer::lexString()
@@ -371,6 +378,7 @@ namespace json {
             if (curr() != '\"') {
                 raiseError("initial \" for string");
             }
+            const int initialPosition = _pos; // get the position for reporting
             next(); // eat the quote
 
             std::string str;
@@ -386,11 +394,12 @@ namespace json {
             if (!endQuoteFound) {
                 raiseError("Terminating \" for string");
             }
-            return {TokenType::STRING, str, _line, _pos };
+            return {TokenType::STRING, str, _line, initialPosition };
         }
 
         char Lexer::next()
         {
+            ++_pos;
             return _text[++_cursor];
         }
 
@@ -404,11 +413,16 @@ namespace json {
             for (char c = curr(); !isDoneReading() && std::isspace(c); c = next()) {
                 if (c == '\n') {
                     ++_line;
-                    _pos = 1;
-                } else {
-                    ++_pos;
+                    _pos = 0;
                 }
             }
+        }
+
+        Token Lexer::reportToken(TokenType type, const std::string& str)
+        {
+            const int currentPosition = _pos;
+            next(); // eat the token
+            return { type, str, _line, currentPosition };
         }
 
         Token Lexer::getToken() 
@@ -420,25 +434,19 @@ namespace json {
 
             char c = curr();
             if (c == '{') {
-                next(); // eat the brace
-                return { TokenType::LBRACE, "{", _line, _pos };
+                return reportToken(TokenType::LBRACE, "{");
             } else if (c == '}') {
-                next(); // eat the brace
-                return { TokenType::RBRACE, "}", _line, _pos };
+                return reportToken(TokenType::RBRACE, "}");
             } else if (c == '\"') {
                 return lexString();
             } else if (c == ':') {
-                next(); // eat the colon
-                return { TokenType::COLON, ":", _line, _pos };
+                return reportToken(TokenType::COLON, ":");
             } else if (c == ',') {
-                next(); // eat the comma
-                return { TokenType::COMMA, ",", _line, _pos };
+                return reportToken(TokenType::COMMA, ",");
             } else if (c == '[') {
-                next(); // eat the bracket
-                return { TokenType::LBRACKET, "[", _line, _pos };
+                return reportToken(TokenType::LBRACKET, "[");
             } else if (c == ']') {
-                next(); // eat the bracket
-                return { TokenType::RBRACKET, "]", _line, _pos };
+                return reportToken(TokenType::RBRACKET, "{");
             } else if (c == 't') {
                 return lexBool("true");
             } else if (c == 'f') {

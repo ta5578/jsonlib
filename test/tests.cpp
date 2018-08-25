@@ -276,3 +276,80 @@ TEST_CASE("TestParseNumberWithNonDigit")
     })";
     REQUIRE_THROWS_AS(json::parse(text), json::parse_exception);
 }
+
+TEST_CASE("TestLexingJSONForPositionAndLineNumber")
+{
+    std::string text =
+    R"({
+    "foo" : "bar",
+    "baz" : true,
+    "abc" : 123
+    })";
+
+    json::detail::Lexer lexer(text);
+    
+    auto tok = lexer.getToken();
+    REQUIRE(tok.value == "{");
+    REQUIRE(tok.line == 1);
+    REQUIRE(tok.pos == 1);
+
+    tok = lexer.getToken();
+    REQUIRE(tok.value == "foo");
+    REQUIRE(tok.line == 2);
+    REQUIRE(tok.pos == 5);
+
+    tok = lexer.getToken();
+    REQUIRE(tok.value == ":");
+    REQUIRE(tok.line == 2);
+    REQUIRE(tok.pos == 11);
+
+    tok = lexer.getToken();
+    REQUIRE(tok.value == "bar");
+    REQUIRE(tok.line == 2);
+    REQUIRE(tok.pos == 13);
+
+    tok = lexer.getToken();
+    REQUIRE(tok.value == ",");
+    REQUIRE(tok.line == 2);
+    REQUIRE(tok.pos == 18);
+
+    tok = lexer.getToken();
+    REQUIRE(tok.value == "baz");
+    REQUIRE(tok.line == 3);
+    REQUIRE(tok.pos == 5);
+
+    tok = lexer.getToken();
+    REQUIRE(tok.value == ":");
+    REQUIRE(tok.line == 3);
+    REQUIRE(tok.pos == 11);
+
+    tok = lexer.getToken();
+    REQUIRE(tok.value == "true");
+    REQUIRE(tok.line == 3);
+    REQUIRE(tok.pos == 13);
+
+    tok = lexer.getToken();
+    REQUIRE(tok.value == ",");
+    REQUIRE(tok.line == 3);
+    REQUIRE(tok.pos == 17);
+
+    tok = lexer.getToken();
+    REQUIRE(tok.value == "abc");
+    REQUIRE(tok.line == 4);
+    REQUIRE(tok.pos == 5);
+
+    tok = lexer.getToken();
+    REQUIRE(tok.value == ":");
+    REQUIRE(tok.line == 4);
+    REQUIRE(tok.pos == 11);
+
+    tok = lexer.getToken();
+    REQUIRE(tok.value == "123");
+    REQUIRE(tok.line == 4);
+    REQUIRE(tok.pos == 13);
+
+    tok = lexer.getToken();
+    REQUIRE(tok.value == "}");
+    REQUIRE(tok.line == 5);
+    REQUIRE(tok.pos == 5);
+}

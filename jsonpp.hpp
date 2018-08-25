@@ -147,6 +147,8 @@ namespace json {
             char next();
             char curr();
 
+            Token reportToken(TokenType type, const std::string& str);
+
         public:
             Lexer(const std::string& text);
             Token getToken();
