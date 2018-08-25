@@ -141,6 +141,8 @@ namespace json {
             Token lexNull();
             Token lexNumber();
 
+            void raiseError(const std::string& expected);
+
             void skipWhitespace();
             char next();
             char curr();

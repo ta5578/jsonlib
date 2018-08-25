@@ -258,6 +258,11 @@ namespace json {
             return _cursor >= _text.size();
         }
 
+        void Lexer::raiseError(const std::string& expected)
+        {
+            throw parse_exception(json::detail::format("Expecting '%s' at (%d:%d) but found '%c' instead!", expected.c_str(), _line, _pos, curr()));
+        }
+
         Lexer::NumberState Lexer::processState(NumberState state, std::string& value)
         {
             char c = curr();
@@ -279,7 +284,7 @@ namespace json {
                     value += c;
                     state = DECIMAL;
                 } else {
-                    throw parse_exception(json::detail::format("Expecting <digit> or <decimal> at (%d:%d) but found '%c' found!", _line, _pos, c));
+                    raiseError("<digit> or <decimal>");
                 }
                 break;
             case DECIMAL:
@@ -289,7 +294,7 @@ namespace json {
                     value += c;
                     state = EXPONENT;
                 } else {
-                    throw parse_exception(json::detail::format("Expecting <digit> or <exponent> at (%d:%d) but '%c' found!", _line, _pos, c));
+                    raiseError("<digit> or <exponent>");
                 }
                 break;
             case EXPONENT:
@@ -299,14 +304,14 @@ namespace json {
                     value += c;
                     state = EXPONENT_DIGIT;
                 } else {
-                    throw parse_exception(json::detail::format("Expecting <digit> or <sign> at (%d:%d) but '%c' found!", _line, _pos, c));
+                    raiseError("<digit> or <sign>");
                 }
                 break;
             case EXPONENT_DIGIT:
                 if (std::isdigit(c)) {
                     value += c;
                 } else {
-                    throw parse_exception(json::detail::format("Expecting <digit> after exponent value at (%d:%d) but '%c' found!", _line, _pos, c));
+                    raiseError("<digit> after exponent value");
                 }
                 break;
             default:
@@ -341,7 +346,7 @@ namespace json {
             char c = curr();
             for (size_t i = 0; i < expected.length() && !isDoneReading(); ++i) {
                 if (c != expected[i]) {
-                    throw parse_exception(json::detail::format("Expecting value sequence '%s' but found '%c' instead!", expected.c_str(), c));
+                    raiseError("value sequence " + expected);
                 }
                 value += c;
                 c = next();
@@ -364,7 +369,7 @@ namespace json {
         Token Lexer::lexString()
         {
             if (curr() != '\"') {
-                throw parse_exception("Expected \" string type!");
+                raiseError("initial \" for string");
             }
             next(); // eat the quote
 
@@ -379,9 +384,8 @@ namespace json {
             }
 
             if (!endQuoteFound) {
-                throw parse_exception("Terminating \" for string not found!");
+                raiseError("Terminating \" for string");
             }
-
             return {TokenType::STRING, str, _line, _pos };
         }
 
