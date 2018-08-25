@@ -130,6 +130,10 @@ namespace json {
             int _line;
             int _pos;
 
+            enum NumberState { SIGN, DIGIT, DECIMAL, EXPONENT, EXPONENT_DIGIT, END };
+
+            Lexer::NumberState Lexer::processState(NumberState state, std::string& value);
+
             bool isDoneReading() const;
             Token lexString();
             std::string lexValueSequence(const std::string& expected);

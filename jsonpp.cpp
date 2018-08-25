@@ -258,10 +258,68 @@ namespace json {
             return _cursor >= _text.size();
         }
 
+        Lexer::NumberState Lexer::processState(NumberState state, std::string& value)
+        {
+            char c = curr();
+            if (std::isspace(c)) {
+                state = END;
+            }
+
+            switch (state) {
+            case SIGN:
+                if (std::isdigit(c)) {
+                    value += c;
+                    state = DIGIT;
+                }
+                break;
+            case DIGIT:
+                if (std::isdigit(c)) {
+                    value += c;
+                } else if (c == '.') {
+                    value += c;
+                    state = DECIMAL;
+                } else {
+                    throw parse_exception(json::detail::format("Expecting <digit> or <decimal> at (%d:%d) but found '%c' found!", _line, _pos, c));
+                }
+                break;
+            case DECIMAL:
+                if (std::isdigit(c)) {
+                    value += c;
+                } else if (c == 'e' || c == 'E') {
+                    value += c;
+                    state = EXPONENT;
+                } else {
+                    throw parse_exception(json::detail::format("Expecting <digit> or <exponent> at (%d:%d) but '%c' found!", _line, _pos, c));
+                }
+                break;
+            case EXPONENT:
+                if (c == '+' || c == '-') {
+                    value += c;
+                } else if (std::isdigit(c)) {
+                    value += c;
+                    state = EXPONENT_DIGIT;
+                } else {
+                    throw parse_exception(json::detail::format("Expecting <digit> or <sign> at (%d:%d) but '%c' found!", _line, _pos, c));
+                }
+                break;
+            case EXPONENT_DIGIT:
+                if (std::isdigit(c)) {
+                    value += c;
+                } else {
+                    throw parse_exception(json::detail::format("Expecting <digit> after exponent value at (%d:%d) but '%c' found!", _line, _pos, c));
+                }
+                break;
+            default:
+                break;
+            }
+            return state;
+        }
+
         Token Lexer::lexNumber()
         {
-            enum NumberState { SIGN, DIGIT, DECIMAL, EXPONENT, EXPONENT_DIGIT, END} state;
             char initialChar = curr();
+
+            NumberState state;
             if (initialChar == '+' || initialChar == '-') {
                 state = SIGN;
             } else {
@@ -270,58 +328,9 @@ namespace json {
             next(); // eat the first char
 
             std::string value(1, initialChar);
-            for (char c = curr(); !isDoneReading() && state != END; c = next()) {
-                if (std::isspace(c)) {
-                    state = END;
-                }
-
-                switch (state) {
-                case SIGN:
-                    if (std::isdigit(c)) {
-                        value += c;
-                        state = DIGIT;
-                    }
-                    break;
-                case DIGIT:
-                    if (std::isdigit(c)) {
-                        value += c;
-                    } else if (c == '.') {
-                        value += c;
-                        state = DECIMAL;
-                    } else {
-                        throw parse_exception(json::detail::format("Expecting <digit> or <decimal> at (%d:%d) but found '%c' found!", _line, _pos, c));
-                    }
-                    break;
-                case DECIMAL:
-                    if (std::isdigit(c)) {
-                        value += c;
-                    } else if (c == 'e' || c == 'E') {
-                        value += c;
-                        state = EXPONENT;
-                    } else {
-                        throw parse_exception(json::detail::format("Expecting <digit> or <exponent> at (%d:%d) but '%c' found!", _line, _pos, c));
-                    }
-                    break;
-                case EXPONENT:
-                    if (c == '+' || c == '-') {
-                        value += c;
-                    } else if (std::isdigit(c)) {
-                        value += c;
-                        state = EXPONENT_DIGIT;
-                    } else {
-                        throw parse_exception(json::detail::format("Expecting <digit> or <sign> at (%d:%d) but '%c' found!", _line, _pos, c));
-                    }
-                    break;
-                case EXPONENT_DIGIT:
-                    if (std::isdigit(c)) {
-                        value += c;
-                    } else {
-                        throw parse_exception(json::detail::format("Expecting <digit> after exponent value at (%d:%d) but '%c' found!", _line, _pos, c));
-                    }
-                    break;
-                default:
-                    break;
-                }
+            while (!isDoneReading() && state != END) {
+                state = processState(state, value);
+                next();
             }
             return { TokenType::NUMBER, value, _line, _pos };
         }
