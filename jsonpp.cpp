@@ -258,18 +258,19 @@ namespace json {
             return _cursor >= _text.size();
         }
 
-        Token Lexer::lexNumber(char initialChar)
+        Token Lexer::lexNumber()
         {
             enum NumberState { SIGN, DIGIT, DECIMAL, EXPONENT, EXPONENT_DIGIT, END} state;
+            char initialChar = curr();
             if (initialChar == '+' || initialChar == '-') {
                 state = SIGN;
             } else {
                 state = DIGIT;
             }
+            next(); // eat the first char
 
             std::string value(1, initialChar);
-            while (!isDoneReading() && state != END) {
-                char c = _text[_cursor++];
+            for (char c = curr(); !isDoneReading() && state != END; c = next()) {
                 if (std::isspace(c)) {
                     state = END;
                 }
@@ -325,37 +326,42 @@ namespace json {
             return { TokenType::NUMBER, value, _line, _pos };
         }
 
-        std::string Lexer::lexValueSequence(char initialChar, const std::string& expected)
+        std::string Lexer::lexValueSequence(const std::string& expected)
         {
-            std::string value(1, initialChar);
-            for (size_t i = 1; i < expected.length() && !isDoneReading(); ++i) {
-                char c = _text[_cursor++];
+            std::string value;
+            char c = curr();
+            for (size_t i = 0; i < expected.length() && !isDoneReading(); ++i) {
                 if (c != expected[i]) {
                     throw parse_exception(json::detail::format("Expecting value sequence '%s' but found '%c' instead!", expected.c_str(), c));
                 }
                 value += c;
+                c = next();
             }
             return value;
         }
 
-        Token Lexer::lexBool(char initialChar, const std::string& expected)
+        Token Lexer::lexBool(const std::string& expected)
         {
-            auto value = lexValueSequence(initialChar, expected);
+            auto value = lexValueSequence(expected);
             return { TokenType::JBOOL, value, _line, _pos };
         }
 
         Token Lexer::lexNull()
         {
-            auto value = lexValueSequence('n', "null");
+            auto value = lexValueSequence("null");
             return { TokenType::JNULL, value, _line, _pos };
         }
 
         Token Lexer::lexString()
         {
+            if (curr() != '\"') {
+                throw parse_exception("Expected \" string type!");
+            }
+            next(); // eat the quote
+
             std::string str;
             bool endQuoteFound = false;
-            while (!endQuoteFound && !isDoneReading()) {
-                char c = _text[_cursor++];
+            for (char c = curr(); !endQuoteFound && !isDoneReading(); c = next()) {
                 if (c == '\"') {
                     endQuoteFound = true;
                 } else {
@@ -370,49 +376,67 @@ namespace json {
             return {TokenType::STRING, str, _line, _pos };
         }
 
-
-        Token Lexer::getToken() 
+        char Lexer::next()
         {
-            // skip white space and account for lines and position in the line
-            while (std::isspace(_text[_cursor]) && !isDoneReading()) {
-                if (_text[_cursor] == '\n') {
+            return _text[++_cursor];
+        }
+
+        char Lexer::curr()
+        {
+            return _text[_cursor];
+        }
+
+        void Lexer::skipWhitespace()
+        {
+            for (char c = curr(); !isDoneReading() && std::isspace(c); c = next()) {
+                if (c == '\n') {
                     ++_line;
                     _pos = 1;
                 } else {
                     ++_pos;
                 }
-                ++_cursor;
+            }
+        }
+
+        Token Lexer::getToken() 
+        {
+            skipWhitespace();
+            if (isDoneReading()) {
+                return { TokenType::NONE, "" };
             }
 
-            while (!isDoneReading()) {
-                char c = _text[_cursor++];
-                if (c == '{') {
-                    return {TokenType::LBRACE, "{", _line, _pos};
-                } else if (c == '}') {
-                    return {TokenType::RBRACE, "}", _line, _pos };
-                } else if (c == '\"') {
-                    return lexString();
-                } else if (c == ':') {
-                    return {TokenType::COLON, ":", _line, _pos };
-                } else if (c == ',') {
-                    return {TokenType::COMMA, ",", _line, _pos };
-                } else if (c == '[') {
-                    return { TokenType::LBRACKET, "[", _line, _pos };
-                } else if (c == ']') {
-                    return { TokenType::RBRACKET, "]", _line, _pos };
-                } else if (c == 't') {
-                    return lexBool(c, "true");
-                } else if (c == 'f') {
-                    return lexBool(c, "false");
-                } else if (c == 'n') {
-                    return lexNull();
-                } else if (c == '-' || c == '+' || std::isdigit(c)) {
-                    return lexNumber(c);
-                } else {
-                    throw parse_exception(c + " is not a valid token!");
-                }
+            char c = curr();
+            if (c == '{') {
+                next(); // eat the brace
+                return { TokenType::LBRACE, "{", _line, _pos };
+            } else if (c == '}') {
+                next(); // eat the brace
+                return { TokenType::RBRACE, "}", _line, _pos };
+            } else if (c == '\"') {
+                return lexString();
+            } else if (c == ':') {
+                next(); // eat the colon
+                return { TokenType::COLON, ":", _line, _pos };
+            } else if (c == ',') {
+                next(); // eat the comma
+                return { TokenType::COMMA, ",", _line, _pos };
+            } else if (c == '[') {
+                next(); // eat the bracket
+                return { TokenType::LBRACKET, "[", _line, _pos };
+            } else if (c == ']') {
+                next(); // eat the bracket
+                return { TokenType::RBRACKET, "]", _line, _pos };
+            } else if (c == 't') {
+                return lexBool("true");
+            } else if (c == 'f') {
+                return lexBool("false");
+            } else if (c == 'n') {
+                return lexNull();
+            } else if (c == '-' || c == '+' || std::isdigit(c)) {
+                return lexNumber();
+            } else {
+                throw parse_exception(c + " is not a valid token!");
             }
-            return {TokenType::NONE, ""};
         }
 
         void Parser::raiseError(const std::string& expected)

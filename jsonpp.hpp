@@ -132,13 +132,17 @@ namespace json {
 
             bool isDoneReading() const;
             Token lexString();
-            std::string lexValueSequence(char initialChar, const std::string& expected);
-            Token lexBool(char initialChar, const std::string& expected);
+            std::string lexValueSequence(const std::string& expected);
+            Token lexBool(const std::string& expected);
             Token lexNull();
-            Token lexNumber(char initialChar);
+            Token lexNumber();
+
+            void skipWhitespace();
+            char next();
+            char curr();
+
         public:
             Lexer(const std::string& text);
-
             Token getToken();
         };
 
