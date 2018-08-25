@@ -353,3 +353,91 @@ TEST_CASE("TestLexingJSONForPositionAndLineNumber")
     REQUIRE(tok.line == 5);
     REQUIRE(tok.pos == 5);
 }
+
+TEST_CASE("TestParseInnerQuoteMarkString")
+{
+    std::string text =
+    R"({
+        "foo" : "b\"ar"
+    })";
+
+    auto obj = json::parse(text);
+    REQUIRE(obj->getStringValue("foo") == R"(b"ar)");
+}
+
+TEST_CASE("TestParseReverseSolidus")
+{
+    std::string text =
+        R"({
+        "foo" : "b\\ar"
+    })";
+
+    auto obj = json::parse(text);
+    REQUIRE(obj->getStringValue("foo") == R"(b\ar)");
+}
+
+TEST_CASE("TestParseSolidus")
+{
+    std::string text =
+        R"({
+        "foo" : "b\/ar"
+    })";
+
+    auto obj = json::parse(text);
+    REQUIRE(obj->getStringValue("foo") == R"(b/ar)");
+}
+
+TEST_CASE("TestParseBackspace")
+{
+    std::string text =
+        R"({
+        "foo" : "b\bar"
+    })";
+
+    auto obj = json::parse(text);
+    REQUIRE(obj->getStringValue("foo") == R"(b\bar)");
+}
+
+TEST_CASE("TestParseFormfeed")
+{
+    std::string text =
+        R"({
+        "foo" : "b\far"
+    })";
+
+    auto obj = json::parse(text);
+    REQUIRE(obj->getStringValue("foo") == R"(b\far)");
+}
+
+TEST_CASE("TestParseNewLine")
+{
+    std::string text =
+        R"({
+        "foo" : "b\nar"
+    })";
+
+    auto obj = json::parse(text);
+    REQUIRE(obj->getStringValue("foo") == R"(b\nar)");
+}
+
+TEST_CASE("TestParseCarriageReturn")
+{
+    std::string text =
+        R"({
+        "foo" : "b\rar"
+    })";
+
+    auto obj = json::parse(text);
+    REQUIRE(obj->getStringValue("foo") == R"(b\rar)");
+}
+
+TEST_CASE("TestParseTab")
+{
+    std::string text =
+        R"({
+        "foo" : "b\tar"
+    })";
+
+    auto obj = json::parse(text);
+    REQUIRE(obj->getStringValue("foo") == R"(b\tar)");
+}

@@ -135,10 +135,16 @@ namespace json {
             Lexer::NumberState Lexer::processState(NumberState state, std::string& value);
 
             bool isDoneReading() const;
+            
+            bool isWhitespaceControlChar(char n) const;
+            bool isControlChar(char c) const;
+            char getControlChar();
             Token lexString();
+
             std::string lexValueSequence(const std::string& expected);
             Token lexBool(const std::string& expected);
             Token lexNull();
+
             Token lexNumber();
 
             void raiseError(const std::string& expected);
@@ -146,6 +152,7 @@ namespace json {
             void skipWhitespace();
             char next();
             char curr();
+            char peek();
 
             Token reportToken(TokenType type, const std::string& str);
 

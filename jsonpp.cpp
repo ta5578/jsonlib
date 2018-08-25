@@ -373,6 +373,32 @@ namespace json {
             return { TokenType::JNULL, value, _line, initialPosition };
         }
 
+        bool Lexer::isWhitespaceControlChar(char n) const
+        {
+            return n == 'b' || n == 'f' || n == 'n' || n == 'r' || n == 't';
+        }
+
+        bool Lexer::isControlChar(char c) const
+        {
+            return c == '\"' || c == '\\' || c == '/' || isWhitespaceControlChar(c);
+        }
+
+        char Lexer::getControlChar()
+        {
+            char n = peek();
+            if (n == EOF) {
+                throw parse_exception(json::detail::format("Dangling control '\\' found at (%d:%d)!", _line, _pos));
+            }
+            next(); // eat the control character
+
+            if (isControlChar(n)) {
+                return n;
+            } else {
+                raiseError(R"("|\|/|b|f|n|r|t) control character)");
+            }
+            return EOF;
+        }
+
         Token Lexer::lexString()
         {
             if (curr() != '\"') {
@@ -386,6 +412,12 @@ namespace json {
             for (char c = curr(); !endQuoteFound && !isDoneReading(); c = next()) {
                 if (c == '\"') {
                     endQuoteFound = true;
+                } else if (c == '\\') {
+                    char n = getControlChar();
+                    if (isWhitespaceControlChar(n)) {
+                        str += c;
+                    }
+                    str += n;
                 } else {
                     str += c;
                 }
@@ -406,6 +438,14 @@ namespace json {
         char Lexer::curr()
         {
             return _text[_cursor];
+        }
+
+        char Lexer::peek()
+        {
+            if (_cursor + 1 >= _text.size()) {
+                return EOF;
+            }
+            return _text[_cursor + 1];
         }
 
         void Lexer::skipWhitespace()
