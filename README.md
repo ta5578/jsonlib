@@ -8,7 +8,7 @@ jsonpp is a single header/source library that can be easily integrated into any 
 
 ## Key Features
 ### Concise error reporting during JSON parsing
-* This can allow for easier debugging when dealing with problematic JSON. One possible error message:
+* This allows easier debugging when dealing with problematic JSON. One possible error message:
 ```
 Expecting '<string>' at line 7:5 but found '}' instead!
 ```
@@ -18,6 +18,9 @@ This message is saying that at line `7` position `5`, a `string` token was expec
 * All parsing errors throw `json::parse_exception`s.
 * All library functions live within the `json` namespace.
 * See the `example` section below for an example of parsing JSON and getting values out of the DOM. For more complete examples, visit the `tests.cpp` file.
+
+### No third party dependencies
+* The library only depends on the C++14 standard library implementation for your system.
 
 ## Example
 ```
