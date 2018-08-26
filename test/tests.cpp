@@ -352,8 +352,7 @@ TEST_CASE("TestParsingNull")
 
 TEST_CASE("TestParseDigitOnlyNumber")
 {
-    std::string text =
-    R"({
+    std::string text =R"({
         "foo" : 12345
     })";
     auto obj = json::parse(text);
@@ -735,4 +734,20 @@ TEST_CASE("TestGoogleMarkers_JSON")
     REQUIRE(loc->size() == 2);
     JSONPP_DOUBLE_EQUALS_INDEX(loc, 0, 25.2084);
     JSONPP_DOUBLE_EQUALS_INDEX(loc, 1, 55.2719);
+}
+
+TEST_CASE("TestYoutubeSearchResults_JSON")
+{
+    auto obj = json::parse(YOUTUBE_SEARCH_JSON);
+    REQUIRE(obj->getStringValue("etag") == R"("m2yskBQFythfE4irbTIeOgYYfBU/PaiEDiVxOyCWelLPuuwa9LKz3Gk")");
+
+    auto pageInfo = obj->getObjectValue("pageInfo");
+    JSONPP_DOUBLE_EQUALS(pageInfo, "totalResults", 4249);
+    JSONPP_DOUBLE_EQUALS(pageInfo, "resultsPerPage", 5);
+
+    auto items = obj->getArrayValue("items");
+    REQUIRE(items->size() == 5);
+
+    auto i1 = items->getObjectValue(0);
+    REQUIRE(i1->getStringValue("kind") == "youtube#searchResult");
 }
