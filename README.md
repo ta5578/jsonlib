@@ -16,6 +16,7 @@ This message is saying that at line `7` position `5`, a `string` token was expec
 
 ### Intuitive, consistent, and easy to use API.
 * All parsing errors throw `json::parse_exception`s.
+* All library functions live within the `json` namespace.
 * See the `example` section below for an example of parsing JSON and getting values out of the DOM. For more complete examples, visit the `tests.cpp` file.
 
 ## Example
@@ -57,6 +58,9 @@ int main()
 
 	// get the number
 	auto numValue = subObj->getNumberValue("num"); // 12345.55
+
+	// you can even get the number recursively ;)
+	numValue = obj->getNumberValue("num"); // 12345.55
 
 	// handle the array
 	auto arr = obj->getArrayValue("arr");
