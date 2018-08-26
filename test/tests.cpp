@@ -1,7 +1,6 @@
 #define CATCH_CONFIG_MAIN
 #include "test/catch.hpp"
 #include "jsonpp.hpp"
-#include <fstream>
 
 #define JSONPP_DOUBLE_EQUALS(obj, name, expected) do {\
     auto target = Approx((expected)).epsilon(std::numeric_limits<double>::epsilon() * 100);\
