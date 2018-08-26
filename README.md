@@ -48,4 +48,4 @@ cmake .. -DCMAKE_BUILD_TYPE=debug
 * [CATCH](https://github.com/catchorg/Catch2)
 
 ## Credits
-All example JSON files in `/test` are taken with credit to [sitepoint-editors repository](https://github.com/sitepoint-editors/json-examples).
+All example JSON strings in `tests.cpp` are taken with credit to [sitepoint-editors repository](https://github.com/sitepoint-editors/json-examples).

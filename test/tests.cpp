@@ -1,11 +1,75 @@
 #define CATCH_CONFIG_MAIN
 #include "test/catch.hpp"
 #include "jsonpp.hpp"
+#include <fstream>
 
 #define JSONPP_DOUBLE_EQUALS(obj, name, expected) do {\
     auto target = Approx((expected)).epsilon(std::numeric_limits<double>::epsilon() * 100);\
     REQUIRE(obj->getNumberValue(name) == target);\
 } while (0)
+
+static constexpr const char* DB_JSON =
+R"(
+{
+  "clients": [
+    {
+      "id": "59761c23b30d971669fb42ff",
+      "isActive": true,
+      "age": 36,
+      "name": "Dunlap Hubbard",
+      "gender": "male",
+      "company": "CEDWARD",
+      "email": "dunlaphubbard@cedward.com",
+      "phone": "+1 (890) 543-2508",
+      "address": "169 Rutledge Street, Konterra, Northern Mariana Islands, 8551"
+    },
+    {
+      "id": "59761c233d8d0f92a6b0570d",
+      "isActive": true,
+      "age": 24,
+      "name": "Kirsten Sellers",
+      "gender": "female",
+      "company": "EMERGENT",
+      "email": "kirstensellers@emergent.com",
+      "phone": "+1 (831) 564-2190",
+      "address": "886 Gallatin Place, Fannett, Arkansas, 4656"
+    },
+    {
+      "id": "59761c23fcb6254b1a06dad5",
+      "isActive": true,
+      "age": 30,
+      "name": "Acosta Robbins",
+      "gender": "male",
+      "company": "ORGANICA",
+      "email": "acostarobbins@organica.com",
+      "phone": "+1 (882) 441-3367",
+      "address": "697 Linden Boulevard, Sattley, Idaho, 1035"
+    },
+    {
+      "id": "59761c23acd38891373f3efd",
+      "isActive": true,
+      "age": 38,
+      "name": "Lawrence Morrison",
+      "gender": "male",
+      "company": "OCTOCORE",
+      "email": "lawrencemorrison@octocore.com",
+      "phone": "+1 (863) 482-3587",
+      "address": "798 Troutman Street, Motley, New Mexico, 216"
+    },
+    {
+      "id": "59761c230a89b90a7f47c8e5",
+      "isActive": true,
+      "age": 29,
+      "name": "Trudy Bennett",
+      "gender": "female",
+      "company": "XPLOR",
+      "email": "trudybennett@xplor.com",
+      "phone": "+1 (920) 520-3028",
+      "address": "141 Richardson Street, Carrsville, Utah, 5923"
+    }
+  ]
+}
+)";
 
 TEST_CASE("TestEmptyStringThrows")
 {
@@ -490,4 +554,36 @@ TEST_CASE("TestRecursiveSearch")
     })";
     auto obj = json::parse(text);
     REQUIRE(obj->getBoolValue("abc") == true);
+}
+
+TEST_CASE("TestIntegralNumberInValuePair")
+{
+    std::string text =
+    R"({
+        "foo" : 36,
+        "bar" : true
+    })";
+
+    auto obj = json::parse(text);
+    JSONPP_DOUBLE_EQUALS(obj, "foo", 36);
+}
+
+TEST_CASE("TestDB_JSON_File")
+{
+    auto obj = json::parse(DB_JSON);
+    auto arr = obj->getArrayValue("clients");
+    REQUIRE(arr != nullptr);
+    REQUIRE(arr->size() == 5);
+    
+    auto client1 = arr->getObjectValue(0);
+    REQUIRE(client1 != nullptr);
+    REQUIRE(client1->getStringValue("id") == "59761c23b30d971669fb42ff");
+    REQUIRE(client1->getBoolValue("isActive") == true);
+    REQUIRE(client1->getNumberValue("age") == 36);
+    REQUIRE(client1->getStringValue("name") == "Dunlap Hubbard");
+    REQUIRE(client1->getStringValue("gender") == "male");
+    REQUIRE(client1->getStringValue("company") == "CEDWARD");
+    REQUIRE(client1->getStringValue("email") == "dunlaphubbard@cedward.com");
+    REQUIRE(client1->getStringValue("phone") == "+1 (890) 543-2508");
+    REQUIRE(client1->getStringValue("address") == "169 Rutledge Street, Konterra, Northern Mariana Islands, 8551");
 }

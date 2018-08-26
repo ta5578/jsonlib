@@ -283,7 +283,7 @@ namespace json {
                     value += c;
                     state = DECIMAL;
                 } else {
-                    raiseError("<digit> or <decimal>");
+                    state = END;
                 }
                 break;
             case DECIMAL:
@@ -293,7 +293,7 @@ namespace json {
                     value += c;
                     state = EXPONENT;
                 } else {
-                    raiseError("<digit> or <exponent>");
+                    state = END;
                 }
                 break;
             case EXPONENT:
@@ -303,14 +303,14 @@ namespace json {
                     value += c;
                     state = EXPONENT_DIGIT;
                 } else {
-                    raiseError("<digit> or <sign>");
+                    state = END;
                 }
                 break;
             case EXPONENT_DIGIT:
                 if (std::isdigit(c)) {
                     value += c;
                 } else {
-                    raiseError("<digit> after exponent value");
+                    state = END;
                 }
                 break;
             default:
@@ -329,15 +329,13 @@ namespace json {
             const char initialChar = curr();
             const int initialPosition = _pos; // get the position for reporting
 
-            NumberState state;
+            std::string value;
             if (initialChar == '+' || initialChar == '-') {
-                state = SIGN;
-            } else {
-                state = DIGIT;
+                value += initialChar;
+                next(); // eat the sign
             }
-            next(); // eat the first char
-
-            std::string value(1, initialChar);
+            
+            NumberState state = DIGIT;
             while (!isDoneReading() && state != END) {
                 state = processState(state, value);
             }
