@@ -8,6 +8,11 @@
     REQUIRE(obj->getNumberValue(name) == target);\
 } while (0)
 
+#define JSONPP_DOUBLE_EQUALS_INDEX(arr, index, expected) do {\
+    auto target = Approx((expected)).epsilon(std::numeric_limits<double>::epsilon() * 100);\
+    REQUIRE(arr->getNumberValue((index)) == target);\
+} while (0)
+
 static constexpr const char* DB_JSON =
 R"(
 {
@@ -68,6 +73,134 @@ R"(
       "address": "141 Richardson Street, Carrsville, Utah, 5923"
     }
   ]
+}
+)";
+
+static constexpr const char* GOOGLE_MARKERS_JSON =
+R"(
+{
+  "markers": [
+    {
+      "name": "Rixos The Palm Dubai",
+      "position": [25.1212, 55.1535]
+    },
+    {
+      "name": "Shangri-La Hotel",
+      "location": [25.2084, 55.2719]
+    },
+    {
+      "name": "Grand Hyatt",
+      "location": [25.2285, 55.3273]
+    }
+  ]
+}
+)";
+
+static constexpr const char* YOUTUBE_SEARCH_JSON =
+R"(
+{
+  "kind": "youtube#searchListResponse",
+  "etag": "\"m2yskBQFythfE4irbTIeOgYYfBU/PaiEDiVxOyCWelLPuuwa9LKz3Gk\"",
+  "nextPageToken": "CAUQAA",
+  "regionCode": "KE",
+  "pageInfo": {
+    "totalResults": 4249,
+    "resultsPerPage": 5
+  },
+  "items": [
+    {
+      "kind": "youtube#searchResult",
+      "etag": "\"m2yskBQFythfE4irbTIeOgYYfBU/QpOIr3QKlV5EUlzfFcVvDiJT0hw\"",
+      "id": {
+        "kind": "youtube#channel",
+        "channelId": "UCJowOS1R0FnhipXVqEnYU1A"
+      }
+    },
+    {
+      "kind": "youtube#searchResult",
+      "etag": "\"m2yskBQFythfE4irbTIeOgYYfBU/sbCCQ5dWx1zCQwp5fKHlrtFTFJ4\"",
+      "id": {
+        "kind": "youtube#video",
+        "videoId": "IGYEtw94zMM"
+      }
+    },
+    {
+      "kind": "youtube#searchResult",
+      "etag": "\"m2yskBQFythfE4irbTIeOgYYfBU/dKYVYE72ZdmqgW9jTeTQOLtgUsI\"",
+      "id": {
+        "kind": "youtube#video",
+        "videoId": "nxa6TeeJQ1s"
+      }
+    },
+    {
+      "kind": "youtube#searchResult",
+      "etag": "\"m2yskBQFythfE4irbTIeOgYYfBU/AWutzVOt_5p1iLVifyBdfoSTf9E\"",
+      "id": {
+        "kind": "youtube#video",
+        "videoId": "Eqa2nAAhHN0"
+      }
+    },
+    {
+      "kind": "youtube#searchResult",
+      "etag": "\"m2yskBQFythfE4irbTIeOgYYfBU/2dIR9BTfr7QphpBuY3hPU-h5u-4\"",
+      "id": {
+        "kind": "youtube#video",
+        "videoId": "IirngItQuVs"
+      }
+    }
+  ],
+  "result": {
+    "kind": "youtube#searchListResponse",
+    "etag": "\"m2yskBQFythfE4irbTIeOgYYfBU/PaiEDiVxOyCWelLPuuwa9LKz3Gk\"",
+    "nextPageToken": "CAUQAA",
+    "regionCode": "KE",
+    "pageInfo": {
+      "totalResults": 4249,
+      "resultsPerPage": 5
+    },
+    "items": [
+      {
+        "kind": "youtube#searchResult",
+        "etag": "\"m2yskBQFythfE4irbTIeOgYYfBU/QpOIr3QKlV5EUlzfFcVvDiJT0hw\"",
+        "id": {
+          "kind": "youtube#channel",
+          "channelId": "UCJowOS1R0FnhipXVqEnYU1A"
+        }
+      },
+      {
+        "kind": "youtube#searchResult",
+        "etag": "\"m2yskBQFythfE4irbTIeOgYYfBU/sbCCQ5dWx1zCQwp5fKHlrtFTFJ4\"",
+        "id": {
+          "kind": "youtube#video",
+          "videoId": "IGYEtw94zMM"
+        }
+      },
+      {
+        "kind": "youtube#searchResult",
+        "etag": "\"m2yskBQFythfE4irbTIeOgYYfBU/dKYVYE72ZdmqgW9jTeTQOLtgUsI\"",
+        "id": {
+          "kind": "youtube#video",
+          "videoId": "nxa6TeeJQ1s"
+        }
+      },
+      {
+        "kind": "youtube#searchResult",
+        "etag": "\"m2yskBQFythfE4irbTIeOgYYfBU/AWutzVOt_5p1iLVifyBdfoSTf9E\"",
+        "id": {
+          "kind": "youtube#video",
+          "videoId": "Eqa2nAAhHN0"
+        }
+      },
+      {
+        "kind": "youtube#searchResult",
+        "etag": "\"m2yskBQFythfE4irbTIeOgYYfBU/2dIR9BTfr7QphpBuY3hPU-h5u-4\"",
+        "id": {
+          "kind": "youtube#video",
+          "videoId": "IirngItQuVs"
+        }
+      }
+    ]
+  }
 }
 )";
 
@@ -568,7 +701,7 @@ TEST_CASE("TestIntegralNumberInValuePair")
     JSONPP_DOUBLE_EQUALS(obj, "foo", 36);
 }
 
-TEST_CASE("TestDB_JSON_File")
+TEST_CASE("TestDB_JSON")
 {
     auto obj = json::parse(DB_JSON);
     auto arr = obj->getArrayValue("clients");
@@ -586,4 +719,20 @@ TEST_CASE("TestDB_JSON_File")
     REQUIRE(client1->getStringValue("email") == "dunlaphubbard@cedward.com");
     REQUIRE(client1->getStringValue("phone") == "+1 (890) 543-2508");
     REQUIRE(client1->getStringValue("address") == "169 Rutledge Street, Konterra, Northern Mariana Islands, 8551");
+}
+
+TEST_CASE("TestGoogleMarkers_JSON")
+{
+    auto obj = json::parse(GOOGLE_MARKERS_JSON);
+    
+    auto arr = obj->getArrayValue("markers");
+    REQUIRE(arr->size() == 3);
+    
+    auto marker2 = arr->getObjectValue(1);
+    REQUIRE(marker2->getStringValue("name") == "Shangri-La Hotel");
+    
+    auto loc = marker2->getArrayValue("location");
+    REQUIRE(loc->size() == 2);
+    JSONPP_DOUBLE_EQUALS_INDEX(loc, 0, 25.2084);
+    JSONPP_DOUBLE_EQUALS_INDEX(loc, 1, 55.2719);
 }
