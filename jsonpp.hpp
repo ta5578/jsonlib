@@ -137,7 +137,7 @@ namespace json {
 
             enum NumberState { SIGN, DIGIT, DECIMAL, EXPONENT, EXPONENT_DIGIT, END };
 
-            Lexer::NumberState Lexer::processState(NumberState state, std::string& value);
+            Lexer::NumberState processState(NumberState state, std::string& value);
 
             bool isDoneReading() const;
             
