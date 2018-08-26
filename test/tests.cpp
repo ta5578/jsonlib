@@ -723,6 +723,7 @@ TEST_CASE("TestDB_JSON")
 TEST_CASE("TestGoogleMarkers_JSON")
 {
     auto obj = json::parse(GOOGLE_MARKERS_JSON);
+    REQUIRE(obj->size() > 0);
     
     auto arr = obj->getArrayValue("markers");
     REQUIRE(arr->size() == 3);
@@ -747,6 +748,12 @@ TEST_CASE("TestYoutubeSearchResults_JSON")
 
     auto items = obj->getArrayValue("items");
     REQUIRE(items->size() == 5);
+    auto allItems = items->getValues();
+    for (auto i : allItems) {
+        REQUIRE(i->isObject());
+        auto o = static_cast<json::Object*>(i);
+        REQUIRE(!o->getStringValue("kind").empty());
+    }
 
     auto i1 = items->getObjectValue(0);
     REQUIRE(i1->getStringValue("kind") == "youtube#searchResult");

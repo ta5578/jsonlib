@@ -44,6 +44,7 @@ namespace json {
         void addValue(std::unique_ptr<Value> value);
         size_t size() const;
 
+        std::vector<Value*> getValues() const;
         Value* getValue(size_t index) const;
         Object* getObjectValue(size_t index) const;
         Array* getArrayValue(size_t index) const;
@@ -59,6 +60,10 @@ namespace json {
         std::map<std::string, std::unique_ptr<Value>> _values;
     public:
         Object();
+
+        std::map<std::string, Value*> getValues() const;
+
+        size_t size() const;
 
         Value* getValue(const std::string& name) const;
         Object* getObjectValue(const std::string& name) const;

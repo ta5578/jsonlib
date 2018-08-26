@@ -70,6 +70,21 @@ namespace json {
         _values.emplace(name, std::move(value));
     }
 
+    std::map<std::string, Value*> Object::getValues() const
+    {
+        std::map<std::string, Value*> values;
+        for (const auto& p : _values) {
+            auto& val = p.second;
+            values.emplace(p.first, val.get());
+        }
+        return values;
+    }
+
+    size_t Object::size() const
+    {
+        return _values.size();
+    }
+
     Object* Object::getObjectValue(const std::string& name) const
     {
         auto value = getValue(name);
@@ -143,6 +158,16 @@ namespace json {
     size_t Array::size() const
     {
         return _values.size();
+    }
+
+    std::vector<Value*> Array::getValues() const
+    {
+        std::vector<Value*> values;
+        values.reserve(size());
+        for (const auto& v : _values) {
+            values.push_back(v.get());
+        }
+        return values;
     }
 
     Value* Array::getValue(size_t index) const
