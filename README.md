@@ -1,6 +1,6 @@
 # jsonpp
 
-jsonpp is a fast and easy to use JSON manipulation library written for C++14. It was written with API design and code readability 
+jsonpp is a fast and easy to use JSON manipulation library written for C++14. It was written with API design and code readability
 in mind to allow manipulating JSON to be as easy as possible for developers and a pleasurable experience reading the source code.
 
 ## Usage
@@ -13,13 +13,13 @@ directory recognized by your compiler and you are good to go.
 #include "jsonpp.h"
 // ... load the JSON somehow as a string
 // here we use in-place text as an example
-auto text = 
- R"({ 
+auto text =
+ R"({
         "foo" : "bar"
    })";
 
 // parse the JSON and return an in-memory DOM. If parsing fails, a json::parse_exception is thrown
-auto obj = json::parse(text); 
+auto obj = json::parse(text);
 
 // now that the DOM is yours, manipulate it in any way you choose
 // for example, this returns the value mapped to "foo"
@@ -46,3 +46,6 @@ cmake .. -DCMAKE_BUILD_TYPE=debug
 ## Libraries
 * [CMake](https://cmake.org)
 * [CATCH](https://github.com/catchorg/Catch2)
+
+## Credits
+All example JSON files in `/test` are taken with credit to [sitepoint-editors repository](https://github.com/sitepoint-editors/json-examples).
