@@ -537,11 +537,6 @@ namespace json {
         std::unique_ptr<Object> Parser::parseObject()
         {
             currentToken = lexer.getToken();
-            if (currentToken.type != detail::TokenType::LBRACE) {
-                raiseError("{");
-            }
-
-            currentToken = lexer.getToken();
 
             // an empty object
             if (currentToken.type == detail::TokenType::RBRACE) {
@@ -599,6 +594,8 @@ namespace json {
                 return std::make_unique<json::Null>();
             } else if (currentToken.type == detail::TokenType::NUMBER) {
                 return std::make_unique<json::Number>(std::stod(currentToken.value));
+            } else if (currentToken.type == detail::TokenType::LBRACE) {
+                return parseObject();
             } else {
                 raiseError("<value>");
             }
@@ -643,6 +640,10 @@ namespace json {
 
         std::unique_ptr<Object> Parser::parse()
         {
+            currentToken = lexer.getToken();
+            if (currentToken.type != detail::TokenType::LBRACE) {
+                raiseError("{");
+            }
             return parseObject();
         }
 

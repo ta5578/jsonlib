@@ -479,3 +479,15 @@ TEST_CASE("TestParseUControlFollowedByNonHexadecimalCharacters")
     })";
     REQUIRE_THROWS_AS(json::parse(text), json::parse_exception);
 }
+
+TEST_CASE("TestRecursiveSearch")
+{
+    std::string text =
+    R"({
+        "foo" : {
+            "abc" : true
+        }
+    })";
+    auto obj = json::parse(text);
+    REQUIRE(obj->getBoolValue("abc") == true);
+}
