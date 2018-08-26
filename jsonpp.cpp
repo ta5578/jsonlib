@@ -259,7 +259,7 @@ namespace json {
 
         void Lexer::raiseError(const std::string& expected)
         {
-            throw parse_exception(json::detail::format("Expecting '%s' at (%d:%d) but found '%c' instead!", expected.c_str(), _line, _pos, curr()));
+            throw parse_exception(json::detail::format("Expecting '%s' at line %d:%d but found '%c' instead!", expected.c_str(), _line, _pos, curr()));
         }
 
         Lexer::NumberState Lexer::processState(NumberState state, std::string& value)
@@ -386,7 +386,7 @@ namespace json {
         {
             char n = peek();
             if (n == EOF) {
-                throw parse_exception(json::detail::format("Dangling control '\\' found at (%d:%d)!", _line, _pos));
+                throw parse_exception(json::detail::format("Dangling control '\\' found at line %d:%d!", _line, _pos));
             }
             next(); // eat the control character
 
@@ -417,7 +417,7 @@ namespace json {
             }
             
             if (digits.length() != 4) {
-                throw parse_exception(json::detail::format("Only 4 hexadecimal values accepted at (%d:%d)", _line, _pos));
+                throw parse_exception(json::detail::format("Only 4 hexadecimal values accepted at line %d:%d", _line, _pos));
             }
 
             return digits;
