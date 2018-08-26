@@ -1,6 +1,5 @@
 ﻿#include "jsonpp.hpp"
 #include <cctype>
-#include <cstdlib>
 
 namespace json {
     
