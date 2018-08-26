@@ -95,8 +95,8 @@ cmake .. -DCMAKE_BUILD_TYPE=debug
 ```
 
 ## Libraries
-* [CMake](https://cmake.org)
-* [CATCH](https://github.com/catchorg/Catch2)
+* [CMake Build System](https://cmake.org)
+* [CATCH Unit Testing](https://github.com/catchorg/Catch2)
 
 ## Credits
 All example JSON strings in `tests.cpp` are taken with credit to [sitepoint-editors repository](https://github.com/sitepoint-editors/json-examples).
