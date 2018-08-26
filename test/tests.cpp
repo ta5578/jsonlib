@@ -441,3 +441,41 @@ TEST_CASE("TestParseTab")
     auto obj = json::parse(text);
     REQUIRE(obj->getStringValue("foo") == R"(b\tar)");
 }
+
+TEST_CASE("TestParseUControl")
+{
+    std::string text =
+    R"({
+        "foo" : "\uDEAD"
+    })";
+
+    auto obj = json::parse(text);
+    REQUIRE(obj->getStringValue("foo") == "DEAD");
+}
+
+TEST_CASE("TestParseUControlWithLessThan4HexadecimalDigits")
+{
+    std::string text =
+    R"({
+        "foo" : "\uABC"
+    })";
+    REQUIRE_THROWS_AS(json::parse(text), json::parse_exception);
+}
+
+TEST_CASE("TestParseUControlWithGreaterThan4HexadecimalDigits")
+{
+    std::string text =
+    R"({
+        "foo" : "\uABCDE"
+    })";
+    REQUIRE_THROWS_AS(json::parse(text), json::parse_exception);
+}
+
+TEST_CASE("TestParseUControlFollowedByNonHexadecimalCharacters")
+{
+    std::string text =
+    R"({
+        "foo" : "\ufgh"
+    })";
+    REQUIRE_THROWS_AS(json::parse(text), json::parse_exception);
+}

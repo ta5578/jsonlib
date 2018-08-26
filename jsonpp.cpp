@@ -380,7 +380,7 @@ namespace json {
 
         bool Lexer::isControlChar(char c) const
         {
-            return c == '\"' || c == '\\' || c == '/' || isWhitespaceControlChar(c);
+            return c == '\"' || c == '\\' || c == '/' || isWhitespaceControlChar(c) || c == 'u';
         }
 
         char Lexer::getControlChar()
@@ -394,9 +394,34 @@ namespace json {
             if (isControlChar(n)) {
                 return n;
             } else {
-                raiseError(R"("|\|/|b|f|n|r|t) control character)");
+                raiseError(R"(("|\|/|b|f|n|r|t) control character)");
             }
             return EOF;
+        }
+
+        bool Lexer::isHexChar(char c)
+        {
+            const auto lower = std::tolower(c);
+            return std::isdigit(c) || (lower >= 'a' && lower <= 'f');
+        }
+
+        std::string Lexer::getHexDigits()
+        {
+            std::string digits;
+            for (char c = curr(); !isDoneReading(); c = next()) {
+                if (isHexChar(c)) {
+                    digits += c;
+                } else {
+                    --_cursor; // leave the lexer at the last valid character
+                    break;
+                }
+            }
+            
+            if (digits.length() != 4) {
+                throw parse_exception(json::detail::format("Only 4 hexadecimal values accepted at (%d:%d)", _line, _pos));
+            }
+
+            return digits;
         }
 
         Token Lexer::lexString()
@@ -416,8 +441,13 @@ namespace json {
                     char n = getControlChar();
                     if (isWhitespaceControlChar(n)) {
                         str += c;
+                        str += n;
+                    } else if (n == 'u') {
+                        next(); // eat the 'u'
+                        str += getHexDigits();
+                    } else {
+                        str += n;
                     }
-                    str += n;
                 } else {
                     str += c;
                 }

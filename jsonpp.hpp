@@ -136,6 +136,8 @@ namespace json {
 
             bool isDoneReading() const;
             
+            bool isHexChar(char c);
+            std::string getHexDigits();
             bool isWhitespaceControlChar(char n) const;
             bool isControlChar(char c) const;
             char getControlChar();
