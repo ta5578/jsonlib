@@ -1,5 +1,6 @@
 ﻿#include "jsonpp.hpp"
 #include <cctype>
+#include <fstream>
 
 namespace json {
     
@@ -234,6 +235,115 @@ namespace json {
         detail::Lexer lexer(text);
         detail::Parser parser(lexer);
         return parser.parse();
+    }
+
+    void Object::accept(ValueVisitor* visitor) const
+    {
+        visitor->visit(this);
+    }
+
+    void Array::accept(ValueVisitor* visitor) const
+    {
+        visitor->visit(this);
+    }
+
+    void String::accept(ValueVisitor* visitor) const
+    {
+        visitor->visit(this);
+    }
+
+    void Bool::accept(ValueVisitor* visitor) const
+    {
+        visitor->visit(this);
+    }
+
+    void Null::accept(ValueVisitor* visitor) const
+    {
+        visitor->visit(this);
+    }
+
+    void Number::accept(ValueVisitor* visitor) const
+    {
+        visitor->visit(this);
+    }
+
+    void ValueWriter::visit(const Object* obj)
+    {
+        auto values = obj->getValues();
+        _str += "{ ";
+        for (const auto& p : values) {
+            _str += ("\"" + p.first + "\"" + " : ");
+            p.second->accept(this);
+            _str += ", ";
+        }
+
+        if (!values.empty()) {
+            _str.pop_back(); // remove space and ,
+            _str.pop_back();
+        }
+        _str += " }";
+    }
+
+    void ValueWriter::visit(const Array* obj)
+    {
+        auto values = obj->getValues();
+        
+        _str += "[ ";
+        for (const auto& v : values) {
+            v->accept(this);
+            _str += ", ";
+        }
+
+        if (!values.empty()) {
+            _str.pop_back(); // remove space and comma
+            _str.pop_back();
+        }
+
+        _str += " ]";
+    }
+
+    void ValueWriter::visit(const String* obj)
+    {
+        _str += ("\"" + obj->getValue() + "\"");
+    }
+
+    void ValueWriter::visit(const Bool* obj)
+    {
+        auto value = obj->getValue();
+        if (value) {
+            _str += "true";
+        } else {
+            _str += "false";
+        }
+    }
+
+    void ValueWriter::visit(const Null* obj)
+    {
+        (void)(obj);
+        _str += "null";
+    }
+
+    void ValueWriter::visit(const Number* obj)
+    {
+        _str += std::to_string(obj->getValue());
+    }
+
+    std::string ValueWriter::getString() const
+    {
+        return _str;
+    }
+
+    void write(const Object* obj, const std::string& filePath)
+    {
+        ValueWriter writer;
+        obj->accept(&writer);
+        auto str = writer.getString();
+        
+        std::ofstream file(filePath);
+        if (!file.is_open()) {
+            throw std::runtime_error("Unable to open " + filePath + " to write JSON.");
+        }
+        file << str;
     }
 
     Bool::Bool(bool value)

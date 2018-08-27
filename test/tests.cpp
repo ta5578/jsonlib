@@ -1,6 +1,7 @@
 #define CATCH_CONFIG_MAIN
 #include "test/catch.hpp"
 #include "jsonpp.hpp"
+#include <fstream>
 
 #define JSONPP_DOUBLE_EQUALS(obj, name, expected) do {\
     auto target = Approx((expected)).epsilon(std::numeric_limits<double>::epsilon() * 100);\
@@ -11,6 +12,22 @@
     auto target = Approx((expected)).epsilon(std::numeric_limits<double>::epsilon() * 100);\
     REQUIRE(arr->getNumberValue((index)) == target);\
 } while (0)
+
+static std::string readFile(const std::string& filePath)
+{
+    std::ifstream file(filePath);
+    if (!file.is_open()) {
+        throw std::runtime_error("JSONPP tests: Unable to open " + filePath + ".");
+    }
+
+    std::string str, line;
+    while (std::getline(file, line)) {
+        str += line;
+        str += '\n';
+    }
+    str.pop_back();
+    return str;
+}
 
 static constexpr const char* DB_JSON =
 R"(
@@ -756,4 +773,38 @@ TEST_CASE("TestYoutubeSearchResults_JSON")
 
     auto i1 = items->getObjectValue(0);
     REQUIRE(i1->getStringValue("kind") == "youtube#searchResult");
+}
+
+TEST_CASE("TestWriteJSONRoundTrip")
+{
+    std::string text =
+    R"({
+        "foo" : "bar",
+        "num" : 1234.56,
+        "arr" : [ 1 , 2 ],
+        "isActive" : true,
+        "huh" : null
+    })";
+
+    auto obj = json::parse(text);
+
+    json::write(obj.get(), "jsonpp-test.json");
+    
+    auto fileObj = json::parse(readFile("jsonpp-test.json"));
+
+    REQUIRE(obj->getStringValue("foo") == fileObj->getStringValue("foo"));
+    REQUIRE(obj->getNumberValue("num") == fileObj->getNumberValue("num"));
+    REQUIRE(obj->getBoolValue("isActive") == fileObj->getBoolValue("isActive"));
+
+    auto arr1 = obj->getArrayValue("arr");
+    auto arr2 = fileObj->getArrayValue("arr");
+    REQUIRE(arr1->size() == arr2->size());
+
+    auto values = arr1->getValues();
+    auto values2 = arr2->getValues();
+    for (size_t i = 0; i < values.size(); ++i) {
+        REQUIRE(values[i]->isNumber());
+        REQUIRE(values2[i]->isNumber());
+        REQUIRE(static_cast<json::Number*>(values[i])->getValue() == static_cast<json::Number*>(values2[i])->getValue());
+    }
 }

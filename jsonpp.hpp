@@ -11,6 +11,8 @@ namespace json {
         parse_exception(const std::string& msg);
     };
 
+    struct ValueVisitor;
+
     class Value {
     protected:
         enum class ValueType {
@@ -26,6 +28,9 @@ namespace json {
         Value(ValueType type);
 
     public:
+        virtual ~Value() {}
+        virtual void accept(ValueVisitor* visitor) const = 0;
+
         bool isObject() const;
         bool isArray() const;
         bool isString() const;
@@ -54,6 +59,7 @@ namespace json {
         double getNumberValue(size_t index, double defaultValue = 0.0f) const;
         void* getNullValue(size_t index) const;
 
+        virtual void accept(ValueVisitor* visitor) const override;
     };
 
     class Object : public Value {
@@ -75,6 +81,8 @@ namespace json {
         void* getNullValue(const std::string& name) const;
 
         void addValue(const std::string& name, std::unique_ptr<Value> value);
+
+        virtual void accept(ValueVisitor* visitor) const override;
     };
 
     class String : public Value {
@@ -82,6 +90,8 @@ namespace json {
     public:
         String(const std::string& value);
         std::string getValue() const;
+
+        virtual void accept(ValueVisitor* visitor) const override;
     };
 
     class Bool : public Value {
@@ -89,12 +99,16 @@ namespace json {
     public:
         Bool(bool value);
         bool getValue() const;
+
+        virtual void accept(ValueVisitor* visitor) const override;
     };
 
     class Null : public Value {
     public:
         Null();
         void* getValue() const;
+
+        virtual void accept(ValueVisitor* visitor) const override;
     };
 
     class Number : public Value {
@@ -102,6 +116,8 @@ namespace json {
     public:
         Number(double value);
         double getValue() const;
+
+        virtual void accept(ValueVisitor* visitor) const override;
     };
 
     namespace detail {
@@ -185,5 +201,32 @@ namespace json {
     }
 
     std::unique_ptr<Object> parse(const std::string& text);
+
+    struct ValueVisitor {
+        virtual ~ValueVisitor() {}
+
+        virtual void visit(const Object* obj) = 0;
+        virtual void visit(const Array* obj) = 0;
+        virtual void visit(const String* obj) = 0;
+        virtual void visit(const Bool* obj) = 0;
+        virtual void visit(const Null* obj) = 0;
+        virtual void visit(const Number* obj) = 0;
+    };
+
+    class ValueWriter : public ValueVisitor {
+    private:
+        std::string _str;
+    public:
+        virtual void visit(const Object* obj) override;
+        virtual void visit(const Array* obj) override;
+        virtual void visit(const String* obj) override;
+        virtual void visit(const Bool* obj) override;
+        virtual void visit(const Null* obj) override;
+        virtual void visit(const Number* obj) override;
+
+        std::string getString() const;
+    };
+
+    void write(const Object* obj, const std::string& filePath);
 
 }
