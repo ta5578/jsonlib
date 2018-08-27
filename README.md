@@ -22,7 +22,10 @@ This message is saying that at line `7` position `5`, a `string` token was expec
 ### No third party dependencies
 * The library only depends on the C++14 standard library implementation for your system.
 
-## Example
+## Examples
+
+Here is an example of parsing, getting values from the JSON DOM, adding values, and saving the JSON.
+
 ```
 #include "jsonpp.hpp"
 int main()
@@ -42,14 +45,19 @@ int main()
 	   })";
 
 	// parse the JSON and return an in-memory DOM. If parsing fails, a json::parse_exception is thrown
-	auto obj = json::parse(text);
+	std::unique_ptr<json::Object> obj = nullptr;
+	try {
+	    obj = json::parse(text);
+	} catch (const json::parse_exception& e) {
+	    // handle the exception
+	}
 
 	// you are the sole owner of the DOM. Now let's get some values out...
 	auto barValue = obj->getStringValue("foo"); // "bar"
 
 	auto boolValue = obj->getStringValue("abc"); // false
 
-        // in case of missing values, you can provide a default that will be returned.
+	// in case of missing values, you can provide a default that will be returned.
 	// defaults are normally set to empty string, null, or false depending on type
 	auto valueNotAvailable = obj->getStringValue("baz", "foobar"); // "foobar"
 
@@ -76,6 +84,12 @@ int main()
 	    }
 	}
 
+	// add a value to the object
+	obj->addValue("myCustomValue", std::make_unique<json::Number>(12));
+
+	// save the updated DOM
+	json::write(obj.get(), "my-json-file.json");
+
 	// obj and all of its children are automatically cleaned up
 }
 ```
@@ -91,7 +105,7 @@ cd build
 cmake ..
 ```
 
-By default, CMake will generate *release* versions of the library. To enable debug builds, build with CMAKE_BUILD_TYPE set to "debug". Note that this will affect single generators like _Make_ and _Ninja_. Other generators like the _Visual Studio_ generator allow you to customize the configuration type once the generator itself is built.
+By default, CMake will generate *release* versions of the library. To enable debug builds, build with CMAKE_BUILD_TYPE set to "debug". Note that this will only affect CMake single generators like _Make_ and _Ninja_. Other generators like the _Visual Studio_ generator allow you to customize the configuration type once the generator itself is built.
 
 ```
 cmake .. -DCMAKE_BUILD_TYPE=debug
