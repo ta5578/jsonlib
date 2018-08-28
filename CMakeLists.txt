@@ -4,12 +4,13 @@ project(jsonpp)
 set (CMAKE_CXX_STANDARD 14)
 
 # Set additional compiler flags
-if(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
+if(CMAKE_SYSTEM_NAME MATCHES "Windows")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W4 /WX")
 else()
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wpedantic -Werror")
 endif()
 
+# Set the build type (this only affects single output generators)
 if(CMAKE_BUILD_TYPE MATCHES "")
     message(WARNING "CMAKE_BUILD_TYPE was not specified. The build will default to a RELEASE build type. Note that this only affects single configuration generators like Make and Ninja.")
     set(CMAKE_BUILD_TYPE "RELEASE")
@@ -34,12 +35,14 @@ message("Current output directory ${JSONPP_OUTPUT_DIR}")
 
 include_directories(.)
 
+# Build a library out of the sources
 set(JSONPP_SOURCES "jsonpp.hpp" "jsonpp.cpp")
 add_library(jsonpp STATIC ${JSONPP_SOURCES})
 set_target_properties(jsonpp PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${JSONPP_OUTPUT_DIR}")
 
 enable_testing()
 
+# Build the test suite
 set(JSONPP_TEST_SOURCES "jsonpp.hpp" "test/catch.hpp" "test/tests.cpp")
 add_executable(testjsonpp ${JSONPP_TEST_SOURCES})
 target_link_libraries(testjsonpp jsonpp)
