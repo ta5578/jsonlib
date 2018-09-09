@@ -1,0 +1,229 @@
+{
+    "samples": [
+        {
+            "_id": "5b945fe041e0d2f26237fe0c",
+            "index": 0,
+            "guid": "1eeb27a7-f8eb-4f3f-952f-709ed2f7c5df",
+            "isActive": false,
+            "balance": "$2,439.26",
+            "picture": "http://placehold.it/32x32",
+            "age": 24,
+            "eyeColor": "blue",
+            "name": "Viola Jordan",
+            "gender": "female",
+            "company": "DREAMIA",
+            "email": "violajordan@dreamia.com",
+            "phone": "+1 (965) 401-2729",
+            "address": "922 Havens Place, Tolu, Northern Mariana Islands, 3284",
+            "about": "Et in laboris deserunt ea laboris aliqua et consectetur. Velit adipisicing eu sit ea cillum excepteur. Amet occaecat cupidatat sunt occaecat do cillum dolor esse reprehenderit quis in in. Occaecat eiusmod ea commodo veniam qui.\r\n",
+            "registered": "2015-06-14T10:50:30 +04:00",
+            "latitude": 49.716167,
+            "longitude": 130.473253,
+            "tags": [
+                "commodo",
+                "est",
+                "anim",
+                "consequat",
+                "ullamco",
+                "non",
+                "sunt"
+            ],
+            "friends": [
+                {
+                    "id": 0,
+                    "name": "Hess French"
+                },
+                {
+                    "id": 1,
+                    "name": "Priscilla Hines"
+                },
+                {
+                    "id": 2,
+                    "name": "Gale Schroeder"
+                }
+            ],
+            "greeting": "Hello, Viola Jordan! You have 6 unread messages.",
+            "favoriteFruit": "apple"
+        },
+        {
+            "_id": "5b945fe035305d6ad92b7c34",
+            "index": 1,
+            "guid": "8e6bd5e4-0ce2-4025-b219-9e607675daa8",
+            "isActive": false,
+            "balance": "$1,104.34",
+            "picture": "http://placehold.it/32x32",
+            "age": 20,
+            "eyeColor": "green",
+            "name": "Contreras Villarreal",
+            "gender": "male",
+            "company": "ULTRASURE",
+            "email": "contrerasvillarreal@ultrasure.com",
+            "phone": "+1 (920) 597-3410",
+            "address": "111 Garnet Street, Sharon, Colorado, 4200",
+            "about": "Incididunt dolore ipsum aliquip veniam ea ullamco consequat in incididunt magna. Dolore cupidatat ut sint exercitation non voluptate. Adipisicing ullamco fugiat ipsum aute excepteur ea nisi adipisicing nisi sint est qui. Do sit ad qui dolor Lorem quis. Veniam esse aliqua occaecat reprehenderit est amet ullamco nisi deserunt.\r\n",
+            "registered": "2016-06-27T03:31:35 +04:00",
+            "latitude": -19.729151,
+            "longitude": -106.481201,
+            "tags": [
+                "in",
+                "incididunt",
+                "tempor",
+                "laboris",
+                "duis",
+                "sint",
+                "aliqua"
+            ],
+            "friends": [
+                {
+                    "id": 0,
+                    "name": "Wiley Nguyen"
+                },
+                {
+                    "id": 1,
+                    "name": "Ines Reed"
+                },
+                {
+                    "id": 2,
+                    "name": "Sykes Cervantes"
+                }
+            ],
+            "greeting": "Hello, Contreras Villarreal! You have 6 unread messages.",
+            "favoriteFruit": "banana"
+        },
+        {
+            "_id": "5b945fe09b7af16d0e28ca9d",
+            "index": 2,
+            "guid": "d95d0617-500f-4c7c-a0d2-73cca9c8ea09",
+            "isActive": true,
+            "balance": "$3,442.46",
+            "picture": "http://placehold.it/32x32",
+            "age": 32,
+            "eyeColor": "brown",
+            "name": "Alejandra Leon",
+            "gender": "female",
+            "company": "FRANSCENE",
+            "email": "alejandraleon@franscene.com",
+            "phone": "+1 (927) 451-3330",
+            "address": "815 Grant Avenue, Turpin, Pennsylvania, 2999",
+            "about": "Ea amet ipsum tempor et culpa reprehenderit dolor nostrud ut aliqua. Ullamco ad enim cupidatat deserunt mollit eu aute eiusmod non elit officia occaecat reprehenderit ut. Reprehenderit incididunt velit exercitation elit anim. Proident ex do ad consequat et amet ex ad. Enim ullamco ullamco ullamco et eu.\r\n",
+            "registered": "2016-06-09T07:10:42 +04:00",
+            "latitude": -30.027227,
+            "longitude": 41.690016,
+            "tags": [
+                "eiusmod",
+                "nulla",
+                "laboris",
+                "cupidatat",
+                "voluptate",
+                "non",
+                "ut"
+            ],
+            "friends": [
+                {
+                    "id": 0,
+                    "name": "Combs Burke"
+                },
+                {
+                    "id": 1,
+                    "name": "Christine Munoz"
+                },
+                {
+                    "id": 2,
+                    "name": "Nixon Conway"
+                }
+            ],
+            "greeting": "Hello, Alejandra Leon! You have 8 unread messages.",
+            "favoriteFruit": "apple"
+        },
+        {
+            "_id": "5b945fe0f02c458e1ba01dfa",
+            "index": 3,
+            "guid": "6f1b16cb-e8cc-4245-af15-5e7e54c67a3f",
+            "isActive": false,
+            "balance": "$3,856.38",
+            "picture": "http://placehold.it/32x32",
+            "age": 39,
+            "eyeColor": "blue",
+            "name": "Tammie Vasquez",
+            "gender": "female",
+            "company": "ZENTIA",
+            "email": "tammievasquez@zentia.com",
+            "phone": "+1 (936) 585-3199",
+            "address": "982 Hoyt Street, Longoria, Utah, 4726",
+            "about": "Officia ipsum elit nisi anim. Do adipisicing nulla ex nostrud. Deserunt fugiat cillum mollit quis mollit officia. Minim commodo qui irure commodo est labore eiusmod sint. Consectetur adipisicing aliqua Lorem quis commodo id.\r\n",
+            "registered": "2018-01-08T06:09:57 +05:00",
+            "latitude": 75.950105,
+            "longitude": -128.939838,
+            "tags": [
+                "ad",
+                "nisi",
+                "ex",
+                "esse",
+                "ipsum",
+                "Lorem",
+                "aute"
+            ],
+            "friends": [
+                {
+                    "id": 0,
+                    "name": "Michael Tran"
+                },
+                {
+                    "id": 1,
+                    "name": "Doreen Mcpherson"
+                },
+                {
+                    "id": 2,
+                    "name": "Keri Hunter"
+                }
+            ],
+            "greeting": "Hello, Tammie Vasquez! You have 8 unread messages.",
+            "favoriteFruit": "banana"
+        },
+        {
+            "_id": "5b945fe011087474cd2dfa70",
+            "index": 4,
+            "guid": "c4041df4-c65b-44bf-931d-4b505e095627",
+            "isActive": true,
+            "balance": "$3,784.60",
+            "picture": "http://placehold.it/32x32",
+            "age": 36,
+            "eyeColor": "brown",
+            "name": "Michael Pena",
+            "gender": "male",
+            "company": "ANIMALIA",
+            "email": "michaelpena@animalia.com",
+            "phone": "+1 (856) 423-2563",
+            "address": "308 Strong Place, Salunga, Oklahoma, 1764",
+            "about": "Nisi pariatur pariatur reprehenderit exercitation cupidatat culpa nulla in duis fugiat nostrud est. Exercitation tempor ullamco excepteur nostrud deserunt. Et sit velit ipsum commodo sint cupidatat. Ut reprehenderit aute sunt reprehenderit in amet voluptate in est. Consequat sunt aute do esse incididunt. Exercitation anim deserunt incididunt labore eu.\r\n",
+            "registered": "2016-09-03T05:58:13 +04:00",
+            "latitude": 43.712026,
+            "longitude": -78.005296,
+            "tags": [
+                "voluptate",
+                "dolor",
+                "quis",
+                "adipisicing",
+                "fugiat",
+                "ullamco",
+                "minim"
+            ],
+            "friends": [
+                {
+                    "id": 0,
+                    "name": "Maura Howard"
+                },
+                {
+                    "id": 1,
+                    "name": "Tran Lang"
+                },
+                {
+                    "id": 2,
+                    "name": "Guy Burns"
+                }
+            ],
+            "greeting": "Hello, Michael Pena! You have 9 unread messages.",
+            "favoriteFruit": "apple"
+        }
+    ]
+}

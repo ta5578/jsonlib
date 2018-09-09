@@ -50,3 +50,18 @@ set_target_properties(testjsonpp PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${JSONPP_O
 
 add_test(jsonpp-test ${JSONPP_OUTPUT_DIR}/testjsonpp)
 
+# Build the performance tests
+message("Building the performance tests...")
+
+set(JSONPP_PERF_SOURCES "jsonpp.hpp" "perf/perfjsonpp.cpp")
+add_executable(perfjsonpp ${JSONPP_PERF_SOURCES})
+target_link_libraries(perfjsonpp jsonpp)
+set_target_properties(perfjsonpp PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${JSONPP_OUTPUT_DIR}")
+
+set(JSONPP_PERF_FILES "${CMAKE_CURRENT_SOURCE_DIR}/perf/tiny.json" "${CMAKE_CURRENT_SOURCE_DIR}/perf/small.json" "${CMAKE_CURRENT_SOURCE_DIR}/perf/medium.json" "${CMAKE_CURRENT_SOURCE_DIR}/perf/large.json")
+
+add_custom_command(
+        TARGET perfjsonpp PRE_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy
+                ${JSONPP_PERF_FILES}
+                ${JSONPP_OUTPUT_DIR})
