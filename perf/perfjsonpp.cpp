@@ -30,7 +30,7 @@ size_t retrieveFileSize(const std::string& name)
         throw std::runtime_error("Unable to open " + name);
     }
 
-    file.seekg(0, SEEK_END);
+    file.seekg(0, std::ios_base::end);
     auto size = file.tellg();
     return static_cast<size_t>(size);
 }
