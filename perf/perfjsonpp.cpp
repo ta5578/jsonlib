@@ -76,7 +76,7 @@ void report(const std::string& name)
 
 int main()
 {
-    auto perfFiles = { "../tiny.json", "../small.json", "../medium.json", "../large.json" };
+    auto perfFiles = { "tiny.json", "small.json", "medium.json", "large.json" };
     for (auto f : perfFiles) {
         try {
             report(f);

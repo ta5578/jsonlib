@@ -10,6 +10,24 @@ else()
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wpedantic -Werror")
 endif()
 
+# Set up the output directory for builds
+set(JSONPP_OUTPUT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/build")
+
+# Set the generic runtime output directory for single generators like "make"
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${JSONPP_OUTPUT_DIR})
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${JSONPP_OUTPUT_DIR})
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${JSONPP_OUTPUT_DIR})
+
+# Set the generic runtime output directory for multi generators like "msvc"
+foreach(OUTPUTCONFIG ${CMAKE_CONFIGURATION_TYPES})
+    string(TOUPPER ${OUTPUTCONFIG} OUTPUTCONFIG)
+    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${JSONPP_OUTPUT_DIR})
+    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${JSONPP_OUTPUT_DIR})
+    set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${JSONPP_OUTPUT_DIR})
+endforeach(OUTPUTCONFIG CMAKE_CONFIGURATION_TYPES)
+
+message("Current output directory ${JSONPP_OUTPUT_DIR}")
+
 # Set the build type (this only affects single output generators)
 if(CMAKE_BUILD_TYPE MATCHES "")
     message(WARNING "CMAKE_BUILD_TYPE was not specified. The build will default to a RELEASE build type. Note that this only affects single configuration generators like Make and Ninja.")
@@ -29,16 +47,11 @@ else()
 endif()
 message("Compiling with ${CMAKE_CXX_FLAGS}")
 
-# Set up the output directory for builds
-set(JSONPP_OUTPUT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/build")
-message("Current output directory ${JSONPP_OUTPUT_DIR}")
-
 include_directories(.)
 
 # Build a library out of the sources
 set(JSONPP_SOURCES "jsonpp.hpp" "jsonpp.cpp")
 add_library(jsonpp STATIC ${JSONPP_SOURCES})
-set_target_properties(jsonpp PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${JSONPP_OUTPUT_DIR}")
 
 enable_testing()
 
@@ -46,7 +59,6 @@ enable_testing()
 set(JSONPP_TEST_SOURCES "jsonpp.hpp" "test/catch.hpp" "test/tests.cpp")
 add_executable(testjsonpp ${JSONPP_TEST_SOURCES})
 target_link_libraries(testjsonpp jsonpp)
-set_target_properties(testjsonpp PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${JSONPP_OUTPUT_DIR}")
 
 add_test(jsonpp-test ${JSONPP_OUTPUT_DIR}/testjsonpp)
 
@@ -56,7 +68,6 @@ message("Building the performance tests...")
 set(JSONPP_PERF_SOURCES "jsonpp.hpp" "perf/perfjsonpp.cpp")
 add_executable(perfjsonpp ${JSONPP_PERF_SOURCES})
 target_link_libraries(perfjsonpp jsonpp)
-set_target_properties(perfjsonpp PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${JSONPP_OUTPUT_DIR}")
 
 set(JSONPP_PERF_FILES "${CMAKE_CURRENT_SOURCE_DIR}/perf/tiny.json" "${CMAKE_CURRENT_SOURCE_DIR}/perf/small.json" "${CMAKE_CURRENT_SOURCE_DIR}/perf/medium.json" "${CMAKE_CURRENT_SOURCE_DIR}/perf/large.json")
 
