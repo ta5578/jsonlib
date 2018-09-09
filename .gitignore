@@ -261,8 +261,11 @@ __pycache__/
 *.pyc
 
 # Build directories
-build/
+build/*
 tmp/
+
+# Allow the keep file
+!build/.gitkeep
 
 # Visual Studio specific CMake files
 CMakeSettings.json

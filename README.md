@@ -1,10 +1,9 @@
 # jsonpp
 
-jsonpp is a fast and easy to use JSON manipulation library written for C++14. It was written with API design and code clarity
-in mind to allow accessing and manipulating JSON to be as easy as possible for C++ developers. It follows the language spec set forth at [JSON](https://www.json.org).
+jsonpp is a fast and easy to use JSON manipulation library written for C++14. The library's primary goal is to have a simple and intuitive API for retrieving and manipulating JSON structures. It is also written with the developer in mind so the source code is easy to follow and change (I hope) :) jsonpp allows parsing and manipulating the JSON spec defined at [JSON](https://www.json.org).
 
 ## Usage
-jsonpp is a single header/source library that can be easily integrated into any C++ environment. Simply put the header and source file into a include and source directory recognized by your compiler. 
+jsonpp is a single header/source library that can be easily integrated into any C++ environment. Simply put the header and source file into a include and source directory recognized by your compiler.
 
 ## Key Features
 ### Concise error reporting during JSON parsing
@@ -17,10 +16,22 @@ This message is saying that at line `7` position `5`, a `string` token was expec
 ### Intuitive, consistent, and easy to use API.
 * All parsing errors throw `json::parse_exception`s.
 * All library functions live within the `json` namespace.
+* Simple manipulation and retrieval of JSON values.
 * See the `example` section below for an example of parsing JSON and getting values out of the DOM. For more complete examples, visit the `tests.cpp` file.
 
 ### No third party dependencies
 * The library only depends on the C++14 standard library implementation for your system.
+
+### Performance
+Although performance is not the primary goal of `jsonpp`, it is still extremely fast. These measurements were taken on
+on a Intel Core i5-4690 @ 3.50 GHz with 32.0 GB RAM Windows 10 Professional and represent the average of 10 runs on `Release` mode:
+
+| JSON File Size (KB) | Time (us) |
+| ------------------- | --------- |
+| 8.93 | 151.5 |
+| 88.789 | 1556.6 |
+| 2354.68 | 39713.6 |
+| 6744.7 | 114717.0 |
 
 ## Examples
 
@@ -95,12 +106,11 @@ int main()
 ```
 
 ## Building
-jsonpp uses CMake as its build system to build the library and run the unit tests. For now, the library will be built as a _static_ library; future versions of this library may allow it to be built as a dynamic library.
+jsonpp uses CMake as its build system to build the library, unit tests, and performance tests. For now, the library will be built as a _static_ library; future versions of this library may allow it to be built as a dynamic library.
 
-For convenience, a `build` directory was included in the `.gitignore` file to allow you to build the library in three steps:
+For convenience, an empty `build` directory was included with the repo to allow you to build the library in two steps:
 
 ```
-mkdir build
 cd build
 cmake ..
 ```
@@ -111,9 +121,8 @@ By default, CMake will generate *release* versions of the library. To enable deb
 cmake .. -DCMAKE_BUILD_TYPE=debug
 ```
 
-## Libraries
-* [CMake Build System](https://cmake.org)
-* [CATCH Unit Testing](https://github.com/catchorg/Catch2)
-
 ## Credits
-All example JSON strings in `tests.cpp` are taken with credit to [sitepoint-editors repository](https://github.com/sitepoint-editors/json-examples).
+* [CMake](https://cmake.org)
+* [CATCH](https://github.com/catchorg/Catch2)
+* [json-generator](https://www.json-generator.com/)
+* Thanks to [sitepoint-editors repository](https://github.com/sitepoint-editors/json-examples) for the example `json` strings for testing.
