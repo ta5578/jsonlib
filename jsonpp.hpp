@@ -14,6 +14,17 @@ namespace json {
     struct ValueVisitor;
 
     class Value {
+    public:
+        virtual ~Value() {}
+        virtual void accept(ValueVisitor* visitor) const = 0;
+
+        bool isObject() const;
+        bool isArray() const;
+        bool isString() const;
+        bool isNumber() const;
+        bool isNull() const;
+        bool isBool() const;
+
     protected:
         enum class ValueType {
             OBJECT,
@@ -26,24 +37,12 @@ namespace json {
 
         bool isType(ValueType type) const;
         Value(ValueType type);
-
-    public:
-        virtual ~Value() {}
-        virtual void accept(ValueVisitor* visitor) const = 0;
-
-        bool isObject() const;
-        bool isArray() const;
-        bool isString() const;
-        bool isNumber() const;
-        bool isNull() const;
-        bool isBool() const;
     };
 
     class Object;
     class Array;
 
     class Array : public Value {
-        std::vector<std::unique_ptr<Value>> _values;
     public:
         Array();
         void addValue(std::unique_ptr<Value> value);
@@ -60,10 +59,11 @@ namespace json {
         void* getNullValue(size_t index) const;
 
         virtual void accept(ValueVisitor* visitor) const override;
+    private:
+        std::vector<std::unique_ptr<Value>> _values;
     };
 
     class Object : public Value {
-        std::map<std::string, std::unique_ptr<Value>> _values;
     public:
         Object();
 
@@ -83,24 +83,28 @@ namespace json {
         void addValue(const std::string& name, std::unique_ptr<Value> value);
 
         virtual void accept(ValueVisitor* visitor) const override;
+    private:
+        std::map<std::string, std::unique_ptr<Value>> _values;
     };
 
     class String : public Value {
-        std::string _value;
     public:
         String(const std::string& value);
         std::string getValue() const;
 
         virtual void accept(ValueVisitor* visitor) const override;
+    private:
+        std::string _value;
     };
 
     class Bool : public Value {
-        bool _value;
     public:
         Bool(bool value);
         bool getValue() const;
 
         virtual void accept(ValueVisitor* visitor) const override;
+    private:
+        bool _value;
     };
 
     class Null : public Value {
@@ -112,12 +116,13 @@ namespace json {
     };
 
     class Number : public Value {
-        double _value;
     public:
         Number(double value);
         double getValue() const;
 
         virtual void accept(ValueVisitor* visitor) const override;
+    private:
+        double _value;
     };
 
     namespace detail {
@@ -146,6 +151,10 @@ namespace json {
         };
 
         class Lexer {
+        public:
+            Lexer(const std::string& text);
+            Token getToken();
+        private:
             size_t _cursor;
             std::string _text;
             int _line;
@@ -156,7 +165,7 @@ namespace json {
             Lexer::NumberState processState(NumberState state, std::string& value);
 
             bool isDoneReading() const;
-            
+
             bool isHexChar(char c);
             std::string getHexDigits();
             bool isWhitespaceControlChar(char n) const;
@@ -178,13 +187,13 @@ namespace json {
             char peek();
 
             Token reportToken(TokenType type, const std::string& str);
-
-        public:
-            Lexer(const std::string& text);
-            Token getToken();
         };
 
         class Parser {
+        public:
+            std::unique_ptr<Object> parse();
+            Parser(Lexer lexer);
+        private:
             Lexer lexer;
             Token currentToken;
 
@@ -193,10 +202,6 @@ namespace json {
             std::unique_ptr<Array> parseArray();
             std::unique_ptr<Object> parseValueList();
             void raiseError(const std::string& expected);
-
-        public:
-            std::unique_ptr<Object> parse();
-            Parser(Lexer lexer);
         };
     }
 
@@ -214,8 +219,6 @@ namespace json {
     };
 
     class ValueWriter : public ValueVisitor {
-    private:
-        std::string _str;
     public:
         virtual void visit(const Object* obj) override;
         virtual void visit(const Array* obj) override;
@@ -225,6 +228,8 @@ namespace json {
         virtual void visit(const Number* obj) override;
 
         std::string getString() const;
+    private:
+        std::string _str;
     };
 
     void write(const Object* obj, const std::string& filePath);
