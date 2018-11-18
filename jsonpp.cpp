@@ -230,6 +230,34 @@ namespace json {
         return nullptr;
     }
 
+    std::unique_ptr<Object> load(const std::string& filePath)
+    {
+        std::ifstream file(filePath);
+        if (!file.is_open()) {
+            throw std::runtime_error("Unable to open " + filePath + " to load JSON.");
+        }
+
+        std::string json, line;
+        while (std::getline(file, line)) {
+            json += line;
+            json += '\n';
+        }
+        return parse(json);
+    }
+
+    void write(const Object* obj, const std::string& filePath)
+    {
+        ValueWriter writer;
+        obj->accept(&writer);
+        auto str = writer.getString();
+
+        std::ofstream file(filePath);
+        if (!file.is_open()) {
+            throw std::runtime_error("Unable to open " + filePath + " to write JSON.");
+        }
+        file << str;
+    }
+
     std::unique_ptr<Object> parse(const std::string& text)
     {
         detail::Lexer lexer(text);
@@ -331,19 +359,6 @@ namespace json {
     std::string ValueWriter::getString() const
     {
         return _str;
-    }
-
-    void write(const Object* obj, const std::string& filePath)
-    {
-        ValueWriter writer;
-        obj->accept(&writer);
-        auto str = writer.getString();
-        
-        std::ofstream file(filePath);
-        if (!file.is_open()) {
-            throw std::runtime_error("Unable to open " + filePath + " to write JSON.");
-        }
-        file << str;
     }
 
     Bool::Bool(bool value)

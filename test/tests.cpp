@@ -13,22 +13,6 @@
     REQUIRE(arr->getNumberValue((index)) == target);\
 } while (0)
 
-static std::string readFile(const std::string& filePath)
-{
-    std::ifstream file(filePath);
-    if (!file.is_open()) {
-        throw std::runtime_error("JSONPP tests: Unable to open " + filePath + ".");
-    }
-
-    std::string str, line;
-    while (std::getline(file, line)) {
-        str += line;
-        str += '\n';
-    }
-    str.pop_back();
-    return str;
-}
-
 static constexpr const char* DB_JSON =
 R"(
 {
@@ -790,7 +774,7 @@ TEST_CASE("TestWriteJSONRoundTrip")
 
     json::write(obj.get(), "jsonpp-test.json");
     
-    auto fileObj = json::parse(readFile("jsonpp-test.json"));
+    auto fileObj = json::load("jsonpp-test.json");
 
     REQUIRE(obj->getStringValue("foo") == fileObj->getStringValue("foo"));
     REQUIRE(obj->getNumberValue("num") == fileObj->getNumberValue("num"));

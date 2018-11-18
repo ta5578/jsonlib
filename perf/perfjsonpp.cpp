@@ -44,19 +44,15 @@ double KB(T bytes)
 template <class T>
 double MB(T bytes)
 {
-    return bytes / (double)1000000;
+    return KB(bytes) / 1000;
 }
 
 std::string readFile(const std::string& name)
 {
-    auto size = retrieveFileSize(name);
-    
     std::ifstream file(name);
     if (!file.is_open()) {
         throw std::runtime_error("Unable to open " + name);
     }
-
-    std::cout << name << " is " << KB(size) << " KB " << MB(size) << " MB big!\n";
 
     std::string text, line;
     while (std::getline(file, line)) {
@@ -68,9 +64,14 @@ std::string readFile(const std::string& name)
 void report(const std::string& name)
 {
     std::cout << "Opening " << name << "\n";
-    auto text = readFile(name);
+    
+    auto size = retrieveFileSize(name);
+    std::cout << name << " is " << KB(size) << " KB " << MB(size) << " MB big!\n";
+
     constexpr size_t reps = 10;
+    auto text = readFile(name);
     auto totalTime = repeat<std::chrono::steady_clock, std::chrono::microseconds>(reps, json::parse, text);
+    
     std::cout << "After parsing " << reps << " times, it took an average of " << totalTime / reps << " us " << (totalTime / 1000) / reps << " ms to parse " << name << ".\n";
 }
 

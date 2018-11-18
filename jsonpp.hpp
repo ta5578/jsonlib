@@ -205,6 +205,10 @@ namespace json {
         };
     }
 
+    std::unique_ptr<Object> load(const std::string& filePath);
+    
+    void write(const Object* obj, const std::string& filePath);
+
     std::unique_ptr<Object> parse(const std::string& text);
 
     struct ValueVisitor {
@@ -231,7 +235,4 @@ namespace json {
     private:
         std::string _str;
     };
-
-    void write(const Object* obj, const std::string& filePath);
-
 }
